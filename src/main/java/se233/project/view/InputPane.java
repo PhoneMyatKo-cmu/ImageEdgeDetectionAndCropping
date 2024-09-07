@@ -11,6 +11,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import se233.project.controller.viewcontrollers.InputPaneController;
 
 public class InputPane extends VBox {
 
@@ -23,6 +24,7 @@ public class InputPane extends VBox {
     Label dropLabel = new Label("Drop Image Here");
     AnchorPane dropPane = new AnchorPane(dropLabel);
     Button continueBtn = new Button("Continue");
+    Button backBtn = new Button("Back");
     String mode;
 
     public InputPane(String mode) {
@@ -37,14 +39,14 @@ public class InputPane extends VBox {
         outputBtn.setPrefSize(300, 30);
         inputBox.setAlignment(Pos.CENTER);
         inputBox.getChildren().addAll(inputBtn, dropPane);
-        this.getChildren().addAll(inputBox, outputBtn, continueBtn);
+        this.getChildren().addAll(inputBox, outputBtn, new HBox(20, backBtn, continueBtn));
 
-        inputBtn.setOnAction(e -> {
-            inputFileChooser.showOpenDialog(this.getScene().getWindow());
-        });
+        inputBtn.setOnAction(e -> InputPaneController.setOnInputBtn(inputFileChooser));
 
-        outputBtn.setOnAction(e -> {
-            outputDirectoryChooser.showDialog(this.getScene().getWindow());
-        });
+        outputBtn.setOnAction(e -> InputPaneController.setOnOutputBtn(outputDirectoryChooser));
+
+        continueBtn.setOnAction(e -> InputPaneController.setOnContinueBtn(mode));
+
+        backBtn.setOnAction(e -> InputPaneController.setOnBackBtn());
     }
 }
