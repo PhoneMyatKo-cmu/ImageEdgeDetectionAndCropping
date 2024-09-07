@@ -19,6 +19,7 @@ public class Launcher extends Application {
         primaryStage.setScene(mainScene);
         primaryStage.setTitle("Edge Detect & Crop");
         primaryStage.show();
+        //Test comment for merge conflict
     }
 
     public static void main(String[] args) {
