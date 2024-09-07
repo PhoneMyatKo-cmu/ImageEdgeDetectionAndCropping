@@ -34,7 +34,7 @@ public class InputPane extends VBox {
         AnchorPane.setTopAnchor(dropLabel, 60.0);
         AnchorPane.setLeftAnchor(dropLabel, 30.0);
         inputBtn.setPrefSize(100, 30);
-        outputBtn.setPrefSize(200, 30);
+        outputBtn.setPrefSize(300, 30);
         inputBox.setAlignment(Pos.CENTER);
         inputBox.getChildren().addAll(inputBtn, dropPane);
         this.getChildren().addAll(inputBox, outputBtn, continueBtn);
