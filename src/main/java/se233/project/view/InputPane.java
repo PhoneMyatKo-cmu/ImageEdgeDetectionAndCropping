@@ -22,7 +22,8 @@ public class InputPane extends VBox {
     Button outputBtn = new Button("Choose Output Directory");
     ListView<String> imageList = new ListView<String>();
     Label dropLabel = new Label("Drop Image Here");
-    AnchorPane dropPane = new AnchorPane(dropLabel);
+    VBox dropLabelContainer = new VBox(dropLabel);
+    AnchorPane dropPane = new AnchorPane(new VBox(dropLabelContainer));
     Button continueBtn = new Button("Continue");
     Button backBtn = new Button("Back");
     String mode;
@@ -31,10 +32,9 @@ public class InputPane extends VBox {
         super(20);
         this.mode = mode;
         this.setPadding(new Insets(10, 20, 50, 20));
-        dropPane.setPrefSize(400, 300);
+        dropLabelContainer.setPrefSize(400, 300);
+        dropLabelContainer.setAlignment(Pos.CENTER);
         dropPane.setStyle("-fx-border-color: black; -fx-border-width: 1px;");
-        AnchorPane.setTopAnchor(dropLabel, 60.0);
-        AnchorPane.setLeftAnchor(dropLabel, 30.0);
         inputBtn.setPrefSize(100, 30);
         outputBtn.setPrefSize(300, 30);
         inputBox.setAlignment(Pos.CENTER);
@@ -48,5 +48,13 @@ public class InputPane extends VBox {
         continueBtn.setOnAction(e -> InputPaneController.setOnContinueBtn(mode));
 
         backBtn.setOnAction(e -> InputPaneController.setOnBackBtn());
+
+        dropPane.setOnDragOver(e -> InputPaneController.setOnDragOver(e));
+
+        dropPane.setOnDragDropped(e -> {
+            InputPaneController.setOnDragDropped(e, imageList);
+            dropPane.getChildren().removeAll();
+            dropPane.getChildren().add(imageList);
+        });
     }
 }

@@ -7,10 +7,11 @@ import javafx.stage.Stage;
 import se233.project.view.MainMenu;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class Launcher extends Application {
     public static Stage primaryStage;
-    public static File[] imageFiles;
+    public static ArrayList<File> imageFiles = new ArrayList<>();
 
     @Override
     public void start(Stage stage) {
