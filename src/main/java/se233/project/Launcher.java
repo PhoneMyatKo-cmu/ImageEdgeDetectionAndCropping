@@ -14,6 +14,7 @@ public class Launcher extends Application {
 
     @Override
     public void start(Stage stage) {
+        //testing merge github
         primaryStage = stage;
         Scene mainScene = new Scene(new MainMenu());
         primaryStage.setScene(mainScene);
