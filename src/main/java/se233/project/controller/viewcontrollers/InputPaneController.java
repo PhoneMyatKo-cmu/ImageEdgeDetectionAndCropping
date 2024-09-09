@@ -12,6 +12,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import se233.project.Launcher;
 import se233.project.controller.Unzip;
+import se233.project.view.CropPane;
 import se233.project.view.EdgeDetectionPane;
 import se233.project.view.MainMenu;
 
@@ -46,7 +47,7 @@ public class InputPaneController {
         if (mode.equals("EdgeDetection")) {
             Launcher.primaryStage.setScene(new Scene(new EdgeDetectionPane()));
         } else if (mode.equals("Crop")) {
-
+             Launcher.primaryStage.setScene(new Scene(new CropPane()));
         }
         Launcher.outputPath = outputField.getText();
     }
