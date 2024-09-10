@@ -63,12 +63,12 @@ public class RobertsCrossEdgeDetector extends GaussianEdgeDetector {
     * All work is done in constructor.
     * @param filePath path to image
     */
-   public RobertsCrossEdgeDetector(String filePath) {
+   public RobertsCrossEdgeDetector(String filePath, boolean defaultThreshold, int threshold) {
       // read image and get pixels
       BufferedImage originalImage;
       try {
          originalImage = ImageIO.read(new File(filePath));
-         findEdges(Grayscale.imgToGrayPixels(originalImage), false);
+         findEdges(Grayscale.imgToGrayPixels(originalImage), false, defaultThreshold, threshold);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -79,16 +79,16 @@ public class RobertsCrossEdgeDetector extends GaussianEdgeDetector {
     * <P> Uses L2 norm by default.
     * @param image
     */
-   public RobertsCrossEdgeDetector(int[][] image) {
-      findEdges(image, false);
+   public RobertsCrossEdgeDetector(int[][] image, boolean defaultThreshold, int threshold) {
+      findEdges(image, false, defaultThreshold, threshold);
    }
    
    /**
     * All work is done in constructor. 
     * <P> Gives option to use L1 or L2 norm.
     */
-   public RobertsCrossEdgeDetector(int[][] image, boolean L1norm) {
-      findEdges(image, L1norm);
+   public RobertsCrossEdgeDetector(int[][] image, boolean L1norm, boolean defaultThreshold, int threshold) {
+      findEdges(image, L1norm, defaultThreshold, threshold);
    }
    
 
@@ -104,28 +104,28 @@ public class RobertsCrossEdgeDetector extends GaussianEdgeDetector {
     * @param args
     * @throws IOException
     */
-   public static void main(String[] args) throws IOException {
-      // read image and get pixels
-      String img = args[0];
-      BufferedImage originalImage = ImageIO.read(new File(img));
-      int[][] pixels = Grayscale.imgToGrayPixels(originalImage);
-
-      // run SobelEdgeDetector
-      final long startTime = System.currentTimeMillis();
-      RobertsCrossEdgeDetector sed = new RobertsCrossEdgeDetector(pixels);
-      final long endTime = System.currentTimeMillis();
-
-      // print timing information
-      final double elapsed = (double) (endTime - startTime) / 1000;
-      System.out.println("Roberts Edge Detector took " + elapsed + " seconds.");
-      System.out.println("Threshold = " + sed.threshold);
-
-      // display edges
-      boolean[][] edges = sed.getEdges();
-      BufferedImage edges_image = Threshold.applyThresholdReversed(edges);
-      BufferedImage[] toShow = {originalImage, edges_image};
-      String title = "Roberts Edge Detector by Jason Altschuler";
-      ImageViewer.showImages(toShow, title);
-   }
+//   public static void main(String[] args) throws IOException {
+//      // read image and get pixels
+//      String img = args[0];
+//      BufferedImage originalImage = ImageIO.read(new File(img));
+//      int[][] pixels = Grayscale.imgToGrayPixels(originalImage);
+//
+//      // run SobelEdgeDetector
+//      final long startTime = System.currentTimeMillis();
+//      RobertsCrossEdgeDetector sed = new RobertsCrossEdgeDetector(pixels);
+//      final long endTime = System.currentTimeMillis();
+//
+//      // print timing information
+//      final double elapsed = (double) (endTime - startTime) / 1000;
+//      System.out.println("Roberts Edge Detector took " + elapsed + " seconds.");
+//      System.out.println("Threshold = " + sed.threshold);
+//
+//      // display edges
+//      boolean[][] edges = sed.getEdges();
+//      BufferedImage edges_image = Threshold.applyThresholdReversed(edges);
+//      BufferedImage[] toShow = {originalImage, edges_image};
+//      String title = "Roberts Edge Detector by Jason Altschuler";
+//      ImageViewer.showImages(toShow, title);
+//   }
 
 }

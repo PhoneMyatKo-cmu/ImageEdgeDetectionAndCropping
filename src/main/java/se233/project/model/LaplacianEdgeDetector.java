@@ -33,7 +33,7 @@ import se233.project.controller.ui.ImageViewer;
 import se233.project.controller.util.Threshold;
 
 
-public class LaplacianEdgeDetector {
+public class LaplacianEdgeDetector extends EdgeDetector {
    
    /************************************************************************
     * Data structures
@@ -46,11 +46,17 @@ public class LaplacianEdgeDetector {
    private int threshold;
    
    // convolution kernel; discretized appromixation of 2nd derivative
-   private double[][] kernel = {{-1, -1, -1},
+   private double[][] kernel3x3 = {{-1, -1, -1},
                                 {-1, 8, -1},
                                 {-1, -1, -1}};
+
+   private double[][] kernel5x5 = {{0, 0, -1, 0, 0},
+                                   {0, -1, -2, -1, 0},
+                                   {-1, -2, 17, -2, -1},
+                                   {0, -1, -2, -1, 0},
+                                   {0, 0, -1, 0, 0}};
    
-   
+   private double[][] kernel;
    /***********************************************************************
     * Detect edges
     ***********************************************************************/
@@ -59,12 +65,17 @@ public class LaplacianEdgeDetector {
     * All work is done in constructor.
     * @param filePath path to image
     */
-   public LaplacianEdgeDetector(String filePath) {
+   public LaplacianEdgeDetector(String filePath, String kernelSize, boolean defaultThreshold, int threshold) {
+      if (kernelSize.equals("3x3")) {
+         kernel = kernel3x3;
+      } else {
+         kernel = kernel5x5;
+      }
       // read image and get pixels
       BufferedImage originalImage;
       try {
          originalImage = ImageIO.read(new File(filePath));
-         findEdges(Grayscale.imgToGrayPixels(originalImage));
+         findEdges(Grayscale.imgToGrayPixels(originalImage), defaultThreshold, threshold);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -76,8 +87,13 @@ public class LaplacianEdgeDetector {
     * <P> All work is done in constructor.
     * @param image
     */
-   public LaplacianEdgeDetector(int[][] image) {
-      findEdges(image);
+   public LaplacianEdgeDetector(int[][] image, String kernelSize, boolean defaultThreshold, int threshold) {
+      if (kernelSize.equals("3x3")) {
+         kernel = kernel3x3;
+      } else {
+         kernel = kernel5x5;
+      }
+      findEdges(image, defaultThreshold, threshold);
    }
 
    
@@ -85,7 +101,7 @@ public class LaplacianEdgeDetector {
     * Finds only the most beautiful edges. 
     * @param image
     */
-   private void findEdges(int[][] image) {
+   private void findEdges(int[][] image, boolean defaultThreshold, int threshold) {
       // convolve image with Gaussian kernel
       ImageConvolution gaussianConvolution = new ImageConvolution(image, ConvolutionKernel.GAUSSIAN_KERNEL);
       int[][] smoothedImage = gaussianConvolution.getConvolvedImage();
@@ -99,13 +115,17 @@ public class LaplacianEdgeDetector {
       int columns = convolvedImage[0].length;
       
       // calculate threshold intensity to be edge
-      threshold = Threshold.calcThresholdEdges(convolvedImage);
+      if (defaultThreshold) {
+         this.threshold = Threshold.calcThresholdEdges(convolvedImage);
+      } else {
+         this.threshold = threshold;
+      }
 
       // threshold image to find edges
       edges = new boolean[rows][columns];
       for (int i = 0; i < rows; i++)
          for (int j = 0; j < columns; j++)
-            edges[i][j] = Math.abs(convolvedImage[i][j]) == 0.0;
+            edges[i][j] = Math.abs(convolvedImage[i][j]) > threshold;
    }
    
    
@@ -126,30 +146,30 @@ public class LaplacianEdgeDetector {
     * Unit testing and display
     *********************************************************************/
    
-   /**
-    * Example run. 
-    * <P> Displays detected edges next to orignal image.
-    * @param args
-    * @throws IOException
-    */
-   public static void main(String[] args) throws IOException {
-      // read image and get pixels
-      String imageFile = "D:\\User\\OneDrive\\Pictures\\Download Pictures\\Lion.jpg";
-      BufferedImage originalImage = ImageIO.read(new File(imageFile));
-      int[][] pixels = Grayscale.imgToGrayPixels(originalImage);
-
-      // run Laplacian edge detector
-      LaplacianEdgeDetector led = new LaplacianEdgeDetector(pixels);
-      
-      // get edges
-      boolean[][] edges = led.getEdges();
-
-      // make images out of edges
-      BufferedImage laplaceImage = Threshold.applyThresholdReversed(edges);
-
-      // display edges
-      BufferedImage[] toShow = {originalImage, laplaceImage};
-      String title = "Laplace Edge Detection by Jason Altschuler";
-      ImageViewer.showImages(toShow, title);
-   }
+//   /**
+//    * Example run.
+//    * <P> Displays detected edges next to orignal image.
+//    * @param args
+//    * @throws IOException
+//    */
+//   public static void main(String[] args) throws IOException {
+//      // read image and get pixels
+//      String imageFile = "D:\\User\\OneDrive\\Pictures\\Download Pictures\\Lion.jpg";
+//      BufferedImage originalImage = ImageIO.read(new File(imageFile));
+//      int[][] pixels = Grayscale.imgToGrayPixels(originalImage);
+//
+//      // run Laplacian edge detector
+//      LaplacianEdgeDetector led = new LaplacianEdgeDetector(pixels);
+//
+//      // get edges
+//      boolean[][] edges = led.getEdges();
+//
+//      // make images out of edges
+//      BufferedImage laplaceImage = Threshold.applyThresholdReversed(edges);
+//
+//      // display edges
+//      BufferedImage[] toShow = {originalImage, laplaceImage};
+//      String title = "Laplace Edge Detection by Jason Altschuler";
+//      ImageViewer.showImages(toShow, title);
+//   }
 }

@@ -42,7 +42,7 @@ import se233.project.controller.util.NonMaximumSuppression;
 import se233.project.controller.util.Threshold;
 
 
-public class CannyEdgeDetector {
+public class CannyEdgeDetector extends EdgeDetector {
    
    /***********************************************************************
     * Static fields

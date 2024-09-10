@@ -14,7 +14,7 @@ import se233.project.controller.util.Hypotenuse;
 import se233.project.controller.util.NonMaximumSuppression;
 import se233.project.controller.util.Threshold;
 
-public abstract class GaussianEdgeDetector {
+public abstract class GaussianEdgeDetector extends EdgeDetector {
 
    /************************************************************************
     * Data structures
@@ -44,7 +44,7 @@ public abstract class GaussianEdgeDetector {
     * Find beautiful edges.
     * @param image
     */
-   protected void findEdges(int[][] image, boolean L1norm) {
+   protected void findEdges(int[][] image, boolean L1norm, boolean defaultThreshold, int threshold) {
       // get convolution kernels
       double[][] x_kernel = getXkernel();
       double[][] y_kernel = getYkernel();
@@ -75,10 +75,15 @@ public abstract class GaussianEdgeDetector {
 
       // apply threshold and non-maximum suppression 
       edges = new boolean[rows][columns];
-      threshold = Threshold.calcThresholdEdges(mag);
+      if (defaultThreshold) {
+         this.threshold = Threshold.calcThresholdEdges(mag);
+      } else {
+         this.threshold = threshold;
+      }
+
       for (int i = 0; i < rows; i++)
          for (int j = 0; j < columns; j++)
-            edges[i][j] = (mag[i][j] < threshold) ? false : NonMaximumSuppression.nonMaximumSuppression(mag, angle[i][j], i , j);
+            edges[i][j] = (mag[i][j] < this.threshold) ? false : NonMaximumSuppression.nonMaximumSuppression(mag, angle[i][j], i , j);
    }
   
 
