@@ -18,10 +18,12 @@ public class MainMenu extends VBox {
         this.setPadding(new Insets(100, 200, 100, 200));
 
         edgeDetectBtn.setOnAction(e -> {
+            Launcher.imageFiles.clear();
             Launcher.primaryStage.setScene(new Scene(new InputPane("EdgeDetection")));
         });
 
         cropBtn.setOnAction(e -> {
+            Launcher.imageFiles.clear();
             Launcher.primaryStage.setScene(new Scene(new InputPane("Crop")));
         });
     }
