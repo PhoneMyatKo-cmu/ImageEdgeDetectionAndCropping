@@ -6,6 +6,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
+import se233.project.view.CropPane;
 
 
 public class ResizableRectangle extends Rectangle {
@@ -59,11 +60,21 @@ public class ResizableRectangle extends Rectangle {
             double newY = super.getY() + offsetY ;
 
             if (newX >= 0 && newX + super.getWidth() <= super.getParent().getBoundsInLocal().getWidth() ) {
+                System.out.println("Parent of rect:"+super.getParent());
                 super.setX(newX);
+            }
+            else {
+
+                return;
             }
 
             if (newY >= 0 && newY + super.getHeight() <= super.getParent().getBoundsInLocal().getHeight()) {
                 super.setY(newY);
+            }
+            else {
+
+
+                return;
             }
             mouseClickPozX = event.getX();
             mouseClickPozY = event.getY();
@@ -82,7 +93,7 @@ public class ResizableRectangle extends Rectangle {
 
 
     }
-
+//TopLeft Corner
     private void makeNWResizerSquare(Group group) {
         Rectangle squareNW = new Rectangle(RESIZER_SQUARE_SIDE,RESIZER_SQUARE_SIDE);
 
@@ -165,8 +176,12 @@ public class ResizableRectangle extends Rectangle {
                 super.setX(newX);
                 super.setWidth(super.getWidth() - offsetX);
             }
+            if(event.getY()>=group.getChildren().get(0).getBoundsInLocal().getHeight()){
 
-            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5) {
+                return;
+            }
+
+            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<=CropPane.mainImageView.getFitHeight()) {
                 super.setHeight(offsetY);
             }
         });
@@ -190,7 +205,7 @@ public class ResizableRectangle extends Rectangle {
             rectangleStartY = super.getY();
             double offsetY = event.getY() - rectangleStartY;
 
-            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5) {
+            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<= CropPane.mainImageView.getFitHeight()) {
                 super.setHeight(offsetY);
             }
 
@@ -216,11 +231,11 @@ public class ResizableRectangle extends Rectangle {
             double offsetX = event.getX() - rectangleStartX;
             double offsetY = event.getY() - rectangleStartY;
 
-            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5) {
+            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<=CropPane.mainImageView.getFitWidth()) {
                 super.setWidth(offsetX);
             }
 
-            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5) {
+            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<=CropPane.mainImageView.getFitHeight()) {
                 super.setHeight(offsetY);
             }
         });
@@ -242,9 +257,11 @@ public class ResizableRectangle extends Rectangle {
         squareCE.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
             rectangleStartX = super.getX();
             double offsetX = event.getX() - rectangleStartX;
-            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5) {
+            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<= CropPane.mainImageView.getFitWidth()) {
                 super.setWidth(offsetX);
             }
+
+
 
         });
     }
@@ -269,7 +286,7 @@ public class ResizableRectangle extends Rectangle {
             double offsetY = event.getY() - rectangleStartY;
             double newY = super.getY() + offsetY ;
 
-            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5) {
+            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<=CropPane.mainImageView.getFitWidth()) {
                 super.setWidth(offsetX);
             }
 
