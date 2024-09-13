@@ -18,6 +18,7 @@ public class ResizableRectangle extends Rectangle {
     private static final double RESIZER_SQUARE_SIDE = 8;
     private Paint resizerSquareColor = Color.WHITE;
     private Paint rectangleStrokeColor = Color.BLUE;
+    private final Paint darkAreaColor = Color.color(0,0,0,0.5);
 
     public ResizableRectangle(double x, double y, double width, double height, Group group) {
         super(x,y,width,height);
@@ -33,6 +34,7 @@ public class ResizableRectangle extends Rectangle {
         moveRect.yProperty().bind(super.yProperty());
         moveRect.widthProperty().bind(super.widthProperty());
         moveRect.heightProperty().bind(super.heightProperty());
+        moveRect.setFill(darkAreaColor);
 
         group.getChildren().add(moveRect);
 
@@ -58,24 +60,26 @@ public class ResizableRectangle extends Rectangle {
             double offsetY = event.getY() - mouseClickPozY;
             double newX = super.getX() + offsetX ;
             double newY = super.getY() + offsetY ;
+            System.out.println("Resizable Rectangle Move at Y:"+event.getY()+" Image View Width:"+ CropPane.mainImageView.getFitHeight());
 
-            if (newX >= 0 && newX + super.getWidth() <= super.getParent().getBoundsInLocal().getWidth() ) {
-                System.out.println("Parent of rect:"+super.getParent());
+            if (newX >= 0 && newX + super.getWidth() <= CropPane.mainImageView.getBoundsInParent().getWidth() ) {
+               // System.out.println("Parent of rect:"+super.getParent());
                 super.setX(newX);
             }
-            else {
+        /*    else {
 
                 return;
-            }
+            }*/
 
-            if (newY >= 0 && newY + super.getHeight() <= super.getParent().getBoundsInLocal().getHeight()) {
+            if (newY >= 0 && newY + super.getHeight() <= CropPane.mainImageView.getBoundsInParent().getHeight()) {
+              //  System.out.println("Group bounds"+super.getParent().getBoundsInLocal().getHeight());
                 super.setY(newY);
             }
-            else {
+          /*  else {
 
 
                 return;
-            }
+            }*/
             mouseClickPozX = event.getX();
             mouseClickPozY = event.getY();
 
@@ -181,7 +185,7 @@ public class ResizableRectangle extends Rectangle {
                 return;
             }
 
-            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<=CropPane.mainImageView.getFitHeight()) {
+            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<=CropPane.mainImageView.getBoundsInParent().getHeight()) {
                 super.setHeight(offsetY);
             }
         });
@@ -205,7 +209,7 @@ public class ResizableRectangle extends Rectangle {
             rectangleStartY = super.getY();
             double offsetY = event.getY() - rectangleStartY;
 
-            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<= CropPane.mainImageView.getFitHeight()) {
+     /*Test*/       if (offsetY >= 0 && event.getY()<= CropPane.mainImageView.getBoundsInParent().getHeight()) {
                 super.setHeight(offsetY);
             }
 
@@ -231,11 +235,11 @@ public class ResizableRectangle extends Rectangle {
             double offsetX = event.getX() - rectangleStartX;
             double offsetY = event.getY() - rectangleStartY;
 
-            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<=CropPane.mainImageView.getFitWidth()) {
+         /*Test*/   if (offsetX >= 0  && event.getX()<=CropPane.mainImageView.getBoundsInParent().getWidth()) {
                 super.setWidth(offsetX);
             }
 
-            if (offsetY >= 0 && offsetY <= super.getY() + super.getHeight() - 5 && event.getY()<=CropPane.mainImageView.getFitHeight()) {
+            /*Test*/     if (offsetY >= 0  && event.getY()<=CropPane.mainImageView.getBoundsInParent().getHeight()) {
                 super.setHeight(offsetY);
             }
         });
@@ -257,7 +261,7 @@ public class ResizableRectangle extends Rectangle {
         squareCE.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
             rectangleStartX = super.getX();
             double offsetX = event.getX() - rectangleStartX;
-            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<= CropPane.mainImageView.getFitWidth()) {
+            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<= CropPane.mainImageView.getBoundsInParent().getWidth()) {
                 super.setWidth(offsetX);
             }
 
@@ -286,7 +290,7 @@ public class ResizableRectangle extends Rectangle {
             double offsetY = event.getY() - rectangleStartY;
             double newY = super.getY() + offsetY ;
 
-            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<=CropPane.mainImageView.getFitWidth()) {
+            if (offsetX >= 0 && offsetX <= super.getX() + super.getWidth() - 5 && event.getX()<=CropPane.mainImageView.getBoundsInParent().getWidth()) {
                 super.setWidth(offsetX);
             }
 

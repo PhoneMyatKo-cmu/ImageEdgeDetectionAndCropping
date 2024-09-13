@@ -1,11 +1,15 @@
 package se233.project.view;
 
 
+import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -34,15 +38,21 @@ public class CropPane extends BorderPane {
     public static ObservableList<ImageView> previewImgList= FXCollections.observableArrayList();
     public static List<File> croppedFilesList=new ArrayList<>();
     public static ImageView previewImgView;
+    public static CroppedListView CroppedimageListView=new CroppedListView();
+    public static DoubleProperty displayWidth=new SimpleDoubleProperty();
+    public static DoubleProperty displayHeight=new SimpleDoubleProperty();
 
 
     public CropPane() {
 
-        final ScrollPane rootPane = new ScrollPane();
+
+
+        final BorderPane rootPane = new BorderPane();
+        //  rootPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         BorderPane secondLevelpane=new BorderPane();
         secondLevelpane.setPadding(new Insets(20,20,20,20));
 
-        rootPane.setPannable(true);
+     //   rootPane.setPannable(true);
        /* rootPane.setPrefViewportHeight(600);
         rootPane.setPrefViewportWidth(800);*/
 
@@ -68,7 +78,8 @@ public class CropPane extends BorderPane {
         mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(0));
         mainImageView.setImage(mainImage);
         mainImageView.setFitWidth(800);
-        mainImageView.setFitHeight(600);
+        mainImageView.setFitHeight(400);
+        mainImageView.setPreserveRatio(true);
         CropPaneController.changeImageViewSize(mainImage,mainImageView);
 
 
@@ -96,31 +107,43 @@ public class CropPane extends BorderPane {
         MenuItem save = new Menu("Save");
         final MenuItem select = new MenuItem("Select Area");
         final MenuItem crop = new MenuItem("Crop");
-        final MenuItem clearSelectionItem = new MenuItem("Clear Selection");
+        final MenuItem backToBtn = new MenuItem("Back");
+
 
         menu2.getItems().add(select);
         menu2.getItems().add(crop);
-        menu2.getItems().add(clearSelectionItem);
+        menu2.getItems().add(backToBtn);
         menu2.getItems().add(save);
 
         select.setOnAction(event -> {areaSelection.selectArea(selectionGroup);
-            rootPane.setPannable(false);});
-        selectionBtn.setOnAction(e->{areaSelection.selectArea(selectionGroup);rootPane.setPannable(false);});
-        clearSelectionBtn.setOnAction(e->CropPaneController.clearSelection(selectionGroup));
+           /* rootPane.setPannable(false);*/});
+
+        selectionBtn.setOnAction(e->{areaSelection.selectArea(selectionGroup);});
+
+        clearSelectionBtn.setOnAction(event-> CropPaneController.clearSelection(selectionGroup));
+
+
+
         cropBtn.setOnAction(e->{
             if(isAreaSelected){
                 CropPaneController.cropImage(areaSelection.selectArea(selectionGroup).getBoundsInParent(),mainImageView);
             }
         });
+
         nextImageBtn.setOnAction(e->{
+
+            mainImage=CropPaneController.convertFileToImage(Launcher.imageFiles.get(imageIndex));
 
             if (imageIndex >= Launcher.imageFiles.size() - 1) {
                 imageIndex = -1;
             } if(imageIndex<Launcher.imageFiles.size()) {
                 imageIndex++;
-                mainImageView.setImage(CropPaneController.convertFileToImage(Launcher.imageFiles.get(imageIndex)));
+                mainImageView.setImage(mainImage);
             }
+            CropPaneController.changeImageViewSize(mainImage,mainImageView);
 
+           Launcher.primaryStage.setMinWidth(mainImageView.getBoundsInParent().getWidth()+CroppedimageListView.getWidth()+50);
+            System.out.println("MainImageView FitWidth after resize:"+mainImageView.getFitWidth());
             System.out.println("Next Image Index:"+imageIndex);
         });
 
@@ -149,18 +172,24 @@ public class CropPane extends BorderPane {
 
         save.setOnAction(e -> CropPaneController.saveCroppedImage(Launcher.primaryStage));
 
-        clearSelectionItem.setOnAction(event -> CropPaneController.clearSelection(selectionGroup));
+        backToBtn.setOnAction(event ->   {
+            Launcher.primaryStage.setScene(new Scene(new InputPane("Crop")));
+            System.out.println("BackBtn pressed.");
+        });
 
         selectionGroup.getChildren().add(mainImageView);
         secondLevelpane.setTop(controlBar);
         secondLevelpane.setLeft(rootPane);
         secondLevelpane.setRight(previewPane());
 
-        rootPane.setContent(selectionGroup);
+        rootPane.setCenter(selectionGroup);
         this.setCenter(secondLevelpane);
         menuBar.getMenus().addAll(menu1, menu2);
         this.setTop(menuBar);
         this.setBottom(new HBox());
+        mode();
+        Platform.runLater(()-> setObPropertyForImageView(mainImageView));
+        System.out.println("MainImageView FitWidth"+mainImageView.getFitWidth());
 
     }
 
@@ -170,13 +199,25 @@ public class CropPane extends BorderPane {
         Label pLabel=new Label("Preview Image");
          previewImgView=new ImageView();
          previewImgView.setFitWidth(300);
-         previewImgView.setFitHeight(300);
+         previewImgView.setFitHeight(225);
+         previewImgView.setPreserveRatio(true);
          containerPane.setSpacing(10);
          containerPane.setPadding(new Insets(10,10,10,10));
          containerPane.getChildren().add(previewImgView);
          containerPane.getChildren().add(pLabel);
          Image pImage=CropPaneController.convertFileToImage(Launcher.imageFiles.get(0));
          previewImgView.setImage(pImage);
+         containerPane.getChildren().add(CroppedimageListView);
+         HBox btnBox=new HBox(30);
+         btnBox.setAlignment(Pos.CENTER);
+         Button saveBtn=new Button("Save");
+         Button clearBtn=new Button("Clear List");
+
+         saveBtn.setOnAction(actionEvent -> CropPaneController.saveCroppedImage(Launcher.primaryStage));
+         clearBtn.setOnAction(actionEvent -> CropPaneController.clearList());
+
+         btnBox.getChildren().addAll(saveBtn,clearBtn);
+         containerPane.getChildren().add(btnBox);
       /*  ListView<ImageView> imageListView=new ListView<>();
         imageListView.setItems(previewImgList);*/
 
@@ -188,6 +229,23 @@ public class CropPane extends BorderPane {
         previewImgView.setImage(image);
        System.out.println("called"+image);
 
+
+   }
+
+   public  void mode(){
+        this.setStyle("-fx-background-color: #F5F5F5;");
+
+    //   Launcher.primaryStage.setMinWidth(mainImageView.getFitWidth()+previewImgView.getFitWidth()+CroppedimageListView.getWidth());
+
+
+   }
+
+   public void setObPropertyForImageView(ImageView imageView){
+        imageView.getParent().layoutBoundsProperty().addListener((obs,old,newBound)->{
+            displayWidth.set(imageView.getBoundsInParent().getWidth());
+            displayHeight.set(imageView.getBoundsInParent().getHeight());
+        });
+       System.out.println("Ob width:"+displayWidth);
    }
 
 

@@ -54,7 +54,7 @@ public class AreaSelection {
               rectangleStartY = 30;
               selectionRectangle=new ResizableRectangle(rectangleStartX,rectangleStartY,100,100,this.group);
               CropPane.isAreaSelected=true;
-              darkenOutsideRectangle(selectionRectangle);
+             // darkenOutsideRectangle(selectionRectangle);
           }
 
         }
@@ -64,17 +64,23 @@ public class AreaSelection {
     }
 
     EventHandler<MouseEvent> onMousePressedEventHandler = event -> {
-        if (event.isSecondaryButtonDown())
-            return;
+        CropPaneController.clearSelection(group);
+        if (event.isSecondaryButtonDown()){
+
+            return;}
+
+
 
         rectangleStartX = event.getX();
         rectangleStartY = event.getY();
 
-        CropPaneController.clearSelection(group);
+
+        selectionRectangle=null;
 
         selectionRectangle = new ResizableRectangle(rectangleStartX, rectangleStartY, 0, 0, group);
+        System.out.println("On Mouse Press:"+selectionRectangle.getWidth()+","+selectionRectangle.getHeight());
 
-        darkenOutsideRectangle(selectionRectangle);
+     //  darkenOutsideRectangle(selectionRectangle);
 
     };
 
@@ -84,6 +90,7 @@ public class AreaSelection {
 
         double offsetX = event.getX() - rectangleStartX;
         double offsetY = event.getY() - rectangleStartY;
+        System.out.println("On Mouse Drag:"+offsetX+","+offsetY);
 
         if (offsetX > 0) {
             if (event.getX() > mainImageView.getFitWidth()){
@@ -129,7 +136,7 @@ public class AreaSelection {
         Rectangle darkAreaRight = new Rectangle(0,0,darkAreaColor);
         Rectangle darkAreaBottom = new Rectangle(0,0,darkAreaColor);
 
-        darkAreaTop.widthProperty().bind(mainImageView.fitWidthProperty());
+        darkAreaTop.widthProperty().bind(CropPane.displayWidth);
         darkAreaTop.heightProperty().bind(rectangle.yProperty());
 
         darkAreaLeft.yProperty().bind(rectangle.yProperty());
@@ -138,13 +145,13 @@ public class AreaSelection {
 
         darkAreaRight.xProperty().bind(rectangle.xProperty().add(rectangle.widthProperty()));
         darkAreaRight.yProperty().bind(rectangle.yProperty());
-        darkAreaRight.widthProperty().bind(mainImageView.fitWidthProperty().subtract(
+        darkAreaRight.widthProperty().bind(CropPane.displayWidth.subtract(
                 rectangle.xProperty().add(rectangle.widthProperty())));
         darkAreaRight.heightProperty().bind(rectangle.heightProperty());
 
         darkAreaBottom.yProperty().bind(rectangle.yProperty().add(rectangle.heightProperty()));
-        darkAreaBottom.widthProperty().bind(mainImageView.fitWidthProperty());
-        darkAreaBottom.heightProperty().bind(mainImageView.fitHeightProperty().subtract(
+        darkAreaBottom.widthProperty().bind(CropPane.displayWidth);
+        darkAreaBottom.heightProperty().bind(CropPane.displayHeight.subtract(
                 rectangle.yProperty().add(rectangle.heightProperty())));
 
         // adding dark area rectangles before the selectionRectangle. So it can't overlap rectangle
