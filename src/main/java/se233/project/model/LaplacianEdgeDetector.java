@@ -50,11 +50,11 @@ public class LaplacianEdgeDetector extends EdgeDetector {
                                 {-1, 8, -1},
                                 {-1, -1, -1}};
 
-   private double[][] kernel5x5 = {{0, 0, -1, 0, 0},
-                                   {0, -1, -2, -1, 0},
-                                   {-1, -2, 17, -2, -1},
-                                   {0, -1, -2, -1, 0},
-                                   {0, 0, -1, 0, 0}};
+   private double[][] kernel5x5 = {{0, 0, 1, 0, 0},
+                                   {0, 1, 2, 1, 0},
+                                   {1, 2, -17, 2, 1},
+                                   {0, 1, 2, 1, 0},
+                                   {0, 0, 1, 0, 0}};
    
    private double[][] kernel;
    /***********************************************************************
@@ -125,7 +125,7 @@ public class LaplacianEdgeDetector extends EdgeDetector {
       edges = new boolean[rows][columns];
       for (int i = 0; i < rows; i++)
          for (int j = 0; j < columns; j++)
-            edges[i][j] = Math.abs(convolvedImage[i][j]) > threshold;
+            edges[i][j] = Math.abs(convolvedImage[i][j]) > this.threshold;
    }
    
    
