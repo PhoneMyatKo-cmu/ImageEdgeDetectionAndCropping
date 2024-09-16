@@ -3,10 +3,7 @@ package se233.project.controller.viewcontrollers;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
@@ -15,6 +12,7 @@ import se233.project.controller.EdgeDetectionTask;
 import se233.project.model.*;
 import se233.project.view.EDImageDisplayArea;
 import se233.project.view.InputPane;
+import se233.project.view.ProgressView;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -30,11 +28,11 @@ public class EDSettingAreaController {
         Launcher.primaryStage.setMaximized(false);
     }
 
-    public static void setOnPreview(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, EDImageDisplayArea imageDisplayArea) {
+    public static void setOnPreview(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, EDImageDisplayArea imageDisplayArea, ProgressView progressView) {
         for (int i = 0; i < Launcher.imageFiles.size(); i++) {
             //imageDisplayArea.removeOutputFromGrid(i);
             File imgFile = Launcher.imageFiles.get(i);
-            EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i);
+            EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, progressView.get(i));
             new Thread(task).start();
         }
     }
@@ -49,42 +47,42 @@ public class EDSettingAreaController {
             for (int i = 0; i < Launcher.imageFiles.size(); i++) {
                 Image img = outputImages.get(Launcher.imageFiles.get(i));
                 String fileName = Launcher.imageFiles.get(i).getName();
-                ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png", new File(Launcher.outputPath + File.separator + fileName));
+                ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png", new File(Launcher.outputPath + File.separator + "EdgeDetected_" +  fileName));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void setOnAlgorithmChange(EdgeDetectionAlgorithms newAlgo, RadioButton weakStrongButton, HBox kernelBox, HBox weakThresholdBox, boolean defaultThreshold) {
+    public static void setOnAlgorithmChange(EdgeDetectionAlgorithms newAlgo, RadioButton defaultButton, RadioButton weakStrongButton, HBox kernelBox, HBox weakThresholdBox, CheckBox thresholdCheckBox) {
         switch (newAlgo) {
             case Canny -> {
                 kernelBox.setVisible(false);
                 weakStrongButton.setVisible(true);
-                weakThresholdBox.setVisible(!defaultThreshold);
+                weakThresholdBox.setVisible(true);
+                thresholdCheckBox.setVisible(false);
+                thresholdCheckBox.setSelected(false);
             }
             case Laplacian, Sobel -> {
                 kernelBox.setVisible(true);
                 weakStrongButton.setVisible(false);
                 weakThresholdBox.setVisible(false);
+                thresholdCheckBox.setVisible(true);
+                thresholdCheckBox.setSelected(true);
+                defaultButton.setSelected(true);
             }
             case Prewitt, RobertsCross -> {
                 kernelBox.setVisible(false);
                 weakStrongButton.setVisible(false);
                 weakThresholdBox.setVisible(false);
+                thresholdCheckBox.setVisible(true);
+                thresholdCheckBox.setSelected(true);
+                defaultButton.setSelected(true);
             }
         }
     }
 
     public static void setOnDefaultThresholdChange(EdgeDetectionAlgorithms algo, boolean defaultThreshold, HBox weakThresholdBox, HBox thresholdBox) {
-        switch (algo) {
-            case Canny -> {
-                weakThresholdBox.setVisible(!defaultThreshold);
-                thresholdBox.setVisible(!defaultThreshold);
-            }
-            case Laplacian, Prewitt, RobertsCross, Sobel -> {
-                thresholdBox.setVisible(!defaultThreshold);
-            }
-        }
+        thresholdBox.setVisible(!defaultThreshold);
     }
 }

@@ -25,9 +25,9 @@ public class EdgeDetectionTask extends Task<Image> {
     String kernelSize, cannyType;
     int weakThreshold, strongThreshold, row;
     boolean defaultThreshold;
-//    ProgressIndicator pi = new ProgressIndicator(100);
+    ProgressIndicator pi;
 
-    public EdgeDetectionTask(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, File imgFile, EDImageDisplayArea imageDisplayArea, int row) {
+    public EdgeDetectionTask(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, File imgFile, EDImageDisplayArea imageDisplayArea, int row, ProgressIndicator pi) {
         this.algo = algo;
         this.imgFile = imgFile;
         this.imageDisplayArea = imageDisplayArea;
@@ -37,14 +37,26 @@ public class EdgeDetectionTask extends Task<Image> {
         this.strongThreshold = strongThreshold;
         this.row = row;
         this.defaultThreshold = defaultThreshold;
-        //pi.progressProperty().bind(this.progressProperty());
+        this.pi = pi;
     }
 
     @Override
     protected Image call() {
-//        pi.setVisible(true);
-//        imageDisplayArea.addProgressIndicator(pi, row);
+        Platform.runLater(() -> {
+            pi.setVisible(true);
+            pi.progressProperty().bind(this.progressProperty());
+        });
+
+        for (int i = 0; i < 75; i++) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            updateProgress(i, 100);
+        }
         BufferedImage edgeImg = detectEdges(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile);
+        updateProgress(100, 100);
         if (edgeImg != null) {
             WritableImage img = SwingFXUtils.toFXImage(edgeImg, null);
             return img;
