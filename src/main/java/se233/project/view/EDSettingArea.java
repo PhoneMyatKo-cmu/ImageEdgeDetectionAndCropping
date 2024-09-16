@@ -53,24 +53,26 @@ public class EDSettingArea extends VBox {
         weakThresholdBox = new HBox(5);
         TextField weakThresholdTextField = new TextField();
         weakThresholdTextField.setPrefWidth(40);
-        Slider weakThresholdSlider = new Slider(0, 100, 10);
+        Slider weakThresholdSlider = new Slider(0, 255, 10);
         weakThresholdSlider.setShowTickLabels(true);
         weakThresholdSlider.setShowTickMarks(true);
         weakThresholdSlider.setBlockIncrement(1);
         weakThresholdSlider.setMajorTickUnit(25);
+        weakThresholdSlider.setMinorTickCount(25);
         weakThresholdTextField.textProperty().bindBidirectional(weakThresholdSlider.valueProperty(), new DecimalFormat("###"));
-        weakThresholdBox.getChildren().addAll(weakThresholdTextField, weakThresholdSlider);
+        weakThresholdBox.getChildren().addAll(weakThresholdTextField, weakThresholdSlider, new Label("255"));
         // change threshold (strong for canny)
         thresholdBox = new HBox(5);
         TextField thresholdTextField = new TextField();
         thresholdTextField.setPrefWidth(40);
-        Slider thresholdSlider = new Slider(0, 100, 25);
+        Slider thresholdSlider = new Slider(0, 255, 25);
         thresholdSlider.setShowTickLabels(true);
         thresholdSlider.setShowTickMarks(true);
         thresholdSlider.setMajorTickUnit(25);
         thresholdSlider.setBlockIncrement(1);
+        thresholdSlider.setMinorTickCount(25);
         thresholdTextField.textProperty().bindBidirectional(thresholdSlider.valueProperty(), new DecimalFormat("###"));
-        thresholdBox.getChildren().addAll(thresholdTextField, thresholdSlider);
+        thresholdBox.getChildren().addAll(thresholdTextField, thresholdSlider, new Label("255"));
         // buttons
         HBox buttonBox = new HBox(30);
         Button backButton = new Button("Back");
