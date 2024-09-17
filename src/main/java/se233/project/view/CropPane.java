@@ -1,7 +1,6 @@
 package se233.project.view;
 
 
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -35,125 +34,74 @@ public class CropPane extends BorderPane {
     public static boolean isAreaSelected = false;
     public static List<WritableImage> wiList = new ArrayList<>();
     public static int imageIndex = 0;
-    public static ObservableList<ImageView> previewImgList= FXCollections.observableArrayList();
-    public static List<File> croppedFilesList=new ArrayList<>();
+    public static ObservableList<ImageView> previewImgList = FXCollections.observableArrayList();
+    public static List<File> croppedFilesList = new ArrayList<>();
     public static ImageView previewImgView;
-    public static CroppedListView CroppedimageListView=new CroppedListView();
-    public static DoubleProperty displayWidth=new SimpleDoubleProperty();
-    public static DoubleProperty displayHeight=new SimpleDoubleProperty();
+    public static CroppedListView CroppedimageListView = new CroppedListView();
+    public static DoubleProperty displayWidth = new SimpleDoubleProperty();
+    public static DoubleProperty displayHeight = new SimpleDoubleProperty();
+    /*Test as ScrollPane*/
+    public static BorderPane secondLevelpane;
+    //  public static BorderPane rootPane;
+    public static ScrollPane scrollPane;
+    public static Group selectionGroup;
 
 
     public CropPane() {
 
 
+        // rootPane = new BorderPane();
+        secondLevelpane = new BorderPane();
+        secondLevelpane.setPadding(new Insets(20, 20, 20, 20));
+        // Launcher.primaryStage.setMaximized(true);
 
-        final BorderPane rootPane = new BorderPane();
-        //  rootPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        BorderPane secondLevelpane=new BorderPane();
-        secondLevelpane.setPadding(new Insets(20,20,20,20));
-
-     //   rootPane.setPannable(true);
-       /* rootPane.setPrefViewportHeight(600);
-        rootPane.setPrefViewportWidth(800);*/
-
-        HBox controlBar=new HBox(20);
+        /*Control Bar Group*/
+        HBox controlBar = new HBox(20);
         controlBar.setAlignment(Pos.CENTER);
-        controlBar.setPadding(new Insets(20,20,20,20));
-       /* ComboBox comboBox=new ComboBox();
-        comboBox.setPromptText("Choose ratio");*/
-        //comboBox.getItems().add("4:3");
-        Button selectionBtn=new Button(("Start Selection"));
-        Button clearSelectionBtn=new Button("Clear Selection");
-        Button nextImageBtn=new Button("Next Image");
-        Button cropBtn=new Button("Crop");
-        controlBar.getChildren().addAll(selectionBtn,clearSelectionBtn,nextImageBtn,cropBtn);
-        //this.setLeft(controlBar);
+        controlBar.setPadding(new Insets(20, 20, 20, 20));
 
+        Button selectionBtn = new Button(("Start Selection"));
+        Button clearSelectionBtn = new Button("Clear Selection");
+        Button nextImageBtn = new Button("Next Image");
+        Button cropBtn = new Button("Crop");
+        Button zoomInBtn = new Button("Zoom In");
+        Button zoomOutBtn = new Button("Zoom Out");
+        zoomInBtn.setVisible(false);
+        zoomOutBtn.setVisible(false);
+        controlBar.getChildren().addAll(selectionBtn, clearSelectionBtn, nextImageBtn, cropBtn, zoomInBtn, zoomOutBtn);
 
-
-
-
-
+        /*Image Instatiate*/
         mainImageView = new ImageView();
         mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(0));
+
         mainImageView.setImage(mainImage);
         mainImageView.setFitWidth(800);
         mainImageView.setFitHeight(400);
-        mainImageView.setPreserveRatio(true);
-        CropPaneController.changeImageViewSize(mainImage,mainImageView);
+        mainImageView.setPreserveRatio(false);
+        CropPaneController.changeImageViewSize(mainImage, mainImageView);
 
 
+        /*Crop Box Start*/
         final AreaSelection areaSelection = new AreaSelection(mainImageView, mainImage);
-        final Group selectionGroup = new Group();
+        selectionGroup = new Group();
+        ComboBox cropOptionBox=cropBox(areaSelection,selectionGroup);
+        controlBar.getChildren().add(cropOptionBox);
+        /*Menu Bar*/
         final MenuBar menuBar = new MenuBar();
-
-
         final Menu menu1 = new Menu("File");
         final Menu menu2 = new Menu("Options");
 
         final MenuItem open = new MenuItem("Open");
         final MenuItem clear = new MenuItem("Clear");
+        final MenuItem viewFull = new Menu("View Full Size");
+        final MenuItem viewFixed = new Menu("View Fixed Size");
 
-
-
-        menu1.getItems().addAll(open, clear);
-
+        menu1.getItems().addAll(open, clear, viewFull, viewFixed);
         clear.setOnAction(event -> {
             CropPaneController.clearSelection(selectionGroup);
             mainImageView.setImage(null);
             System.gc();
         });
-
-        MenuItem save = new Menu("Save");
-        final MenuItem select = new MenuItem("Select Area");
-        final MenuItem crop = new MenuItem("Crop");
-        final MenuItem backToBtn = new MenuItem("Back");
-
-
-        menu2.getItems().add(select);
-        menu2.getItems().add(crop);
-        menu2.getItems().add(backToBtn);
-        menu2.getItems().add(save);
-
-        select.setOnAction(event -> {areaSelection.selectArea(selectionGroup);
-           /* rootPane.setPannable(false);*/});
-
-        selectionBtn.setOnAction(e->{areaSelection.selectArea(selectionGroup);});
-
-        clearSelectionBtn.setOnAction(event-> CropPaneController.clearSelection(selectionGroup));
-
-
-
-        cropBtn.setOnAction(e->{
-            if(isAreaSelected){
-                CropPaneController.cropImage(areaSelection.selectArea(selectionGroup).getBoundsInParent(),mainImageView);
-            }
-        });
-
-        nextImageBtn.setOnAction(e->{
-
-            mainImage=CropPaneController.convertFileToImage(Launcher.imageFiles.get(imageIndex));
-
-            if (imageIndex >= Launcher.imageFiles.size() - 1) {
-                imageIndex = -1;
-            } if(imageIndex<Launcher.imageFiles.size()) {
-                imageIndex++;
-                mainImageView.setImage(mainImage);
-            }
-            CropPaneController.changeImageViewSize(mainImage,mainImageView);
-
-           Launcher.primaryStage.setMinWidth(mainImageView.getBoundsInParent().getWidth()+CroppedimageListView.getWidth()+50);
-            System.out.println("MainImageView FitWidth after resize:"+mainImageView.getFitWidth());
-            System.out.println("Next Image Index:"+imageIndex);
-        });
-
-
-
-        crop.setOnAction(event -> {
-            if (isAreaSelected)
-                CropPaneController.cropImage(areaSelection.getSelectionRectangle().getBoundsInParent(), mainImageView);
-        });
-
         open.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Image file");
@@ -170,85 +118,135 @@ public class CropPane extends BorderPane {
 
 
 
-        save.setOnAction(e -> CropPaneController.saveCroppedImage(Launcher.primaryStage));
-
-        backToBtn.setOnAction(event ->   {
+        final MenuItem backToBtn = new MenuItem("Back");
+        menu2.getItems().add(backToBtn);
+        backToBtn.setOnAction(event -> {
             Launcher.primaryStage.setScene(new Scene(new InputPane("Crop")));
             System.out.println("BackBtn pressed.");
         });
 
+
+        selectionBtn.setOnAction(e -> areaSelection.selectArea(selectionGroup));
+
+        clearSelectionBtn.setOnAction(event -> CropPaneController.clearSelection(selectionGroup));
+
+
+        cropBtn.setOnAction(e -> {
+            if (isAreaSelected) {
+                CropPaneController.cropImage(areaSelection.getSelectionRectangle().getBoundsInParent(), mainImageView);
+            }
+        });
+
+        nextImageBtn.setOnAction(e -> {
+            CropPaneController.nextImageBtn(mainImageView, mainImage);
+            //CropPaneController.viewFullSize(mainImage);
+        });
+
+        zoomInBtn.setOnAction(event -> CropPaneController.zoomIn(scrollPane));
+        zoomOutBtn.setOnAction(event -> CropPaneController.zoomOut(scrollPane));
+
         selectionGroup.getChildren().add(mainImageView);
+        scrollPane = changeScrollPane(selectionGroup);
+        //CropPaneController.viewFullSize(mainImage);
         secondLevelpane.setTop(controlBar);
-        secondLevelpane.setLeft(rootPane);
+        secondLevelpane.setLeft(scrollPane);
         secondLevelpane.setRight(previewPane());
 
-        rootPane.setCenter(selectionGroup);
+        /*Test as scroll pane*/
+        // rootPane.setCenter(selectionGroup);
+
         this.setCenter(secondLevelpane);
         menuBar.getMenus().addAll(menu1, menu2);
         this.setTop(menuBar);
         this.setBottom(new HBox());
         mode();
-        Platform.runLater(()-> setObPropertyForImageView(mainImageView));
-        System.out.println("MainImageView FitWidth"+mainImageView.getFitWidth());
+        zoomInBtn.setVisible(true);
+        zoomOutBtn.setVisible(true);
+        CropPaneController.viewFullSize(mainImage);
 
     }
 
-   public VBox previewPane(){
-        VBox containerPane=new VBox();
+    public VBox previewPane() {
+        VBox containerPane = new VBox();
+        containerPane.setPrefWidth(400);
         containerPane.setAlignment(Pos.CENTER);
-        Label pLabel=new Label("Preview Image");
-         previewImgView=new ImageView();
-         previewImgView.setFitWidth(300);
-         previewImgView.setFitHeight(225);
-         previewImgView.setPreserveRatio(true);
-         containerPane.setSpacing(10);
-         containerPane.setPadding(new Insets(10,10,10,10));
-         containerPane.getChildren().add(previewImgView);
-         containerPane.getChildren().add(pLabel);
-         Image pImage=CropPaneController.convertFileToImage(Launcher.imageFiles.get(0));
-         previewImgView.setImage(pImage);
-         containerPane.getChildren().add(CroppedimageListView);
-         HBox btnBox=new HBox(30);
-         btnBox.setAlignment(Pos.CENTER);
-         Button saveBtn=new Button("Save");
-         Button clearBtn=new Button("Clear List");
+        Label pLabel = new Label("Preview Image");
+        previewImgView = new ImageView();
+        previewImgView.setFitWidth(300);
+        previewImgView.setFitHeight(225);
+        previewImgView.setPreserveRatio(true);
+        containerPane.setSpacing(10);
+        containerPane.setPadding(new Insets(10, 10, 10, 10));
+        containerPane.getChildren().add(previewImgView);
+        containerPane.getChildren().add(pLabel);
+        Image pImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(0));
+        previewImgView.setImage(pImage);
+        containerPane.getChildren().add(CroppedimageListView);
+        HBox btnBox = new HBox(30);
+        btnBox.setAlignment(Pos.CENTER);
+        Button saveBtn = new Button("Save");
+        Button clearBtn = new Button("Clear List");
 
-         saveBtn.setOnAction(actionEvent -> CropPaneController.saveCroppedImage(Launcher.primaryStage));
-         clearBtn.setOnAction(actionEvent -> CropPaneController.clearList());
+        saveBtn.setOnAction(actionEvent -> CropPaneController.saveCroppedImage(Launcher.primaryStage));
+        clearBtn.setOnAction(actionEvent -> CropPaneController.clearList());
+        
+        btnBox.getChildren().addAll(saveBtn, clearBtn);
+        containerPane.getChildren().add(btnBox);
+        return containerPane;
+    }
 
-         btnBox.getChildren().addAll(saveBtn,clearBtn);
-         containerPane.getChildren().add(btnBox);
-      /*  ListView<ImageView> imageListView=new ListView<>();
-        imageListView.setItems(previewImgList);*/
-
-        return containerPane ;
-
-   }
-
-   public static void refreshPreview(Image image){
+    public static void refreshPreview(Image image) {
         previewImgView.setImage(image);
-       System.out.println("called"+image);
+        System.out.println("called" + image);
 
 
-   }
+    }
 
-   public  void mode(){
+    public void mode() {
         this.setStyle("-fx-background-color: #F5F5F5;");
+        secondLevelpane.getLeft().setStyle("-fx-border-color: black;-fx-border-width: 1");
+        // rootPane.setPadding(new Insets(20,20,20,20));
 
-    //   Launcher.primaryStage.setMinWidth(mainImageView.getFitWidth()+previewImgView.getFitWidth()+CroppedimageListView.getWidth());
+
+        //   Launcher.primaryStage.setMinWidth(mainImageView.getFitWidth()+previewImgView.getFitWidth()+CroppedimageListView.getWidth());
 
 
-   }
+    }
 
-   public void setObPropertyForImageView(ImageView imageView){
-        imageView.getParent().layoutBoundsProperty().addListener((obs,old,newBound)->{
+    public void setObPropertyForImageView(ImageView imageView) {
+        imageView.getParent().layoutBoundsProperty().addListener((obs, old, newBound) -> {
             displayWidth.set(imageView.getBoundsInParent().getWidth());
             displayHeight.set(imageView.getBoundsInParent().getHeight());
         });
-       System.out.println("Ob width:"+displayWidth);
-   }
+        System.out.println("Ob width:" + displayWidth);
+    }
 
 
+    public static ScrollPane changeScrollPane(Group selectionGroup) {
+        ScrollPane scrollPane = new ScrollPane(selectionGroup);
+        scrollPane.setPrefViewportWidth(800);
+        scrollPane.setPrefViewportHeight(400);
+        scrollPane.setPannable(false);
+        //CropPaneController.viewFullSize(mainImage);
+
+        return scrollPane;
+    }
+
+    public ComboBox cropBox(AreaSelection selectedArea,Group group){
+        ComboBox comboBox=new ComboBox();
+        comboBox.setPromptText("Crop Box Options");
+        comboBox.getItems().add("Free");
+        comboBox.getItems().add("16:9");
+        comboBox.getItems().add("4:3");
+        comboBox.getItems().add("1:1");
+        comboBox.getItems().add("3:2");
+        comboBox.getItems().add("5:4");
+
+        comboBox.setOnAction(event->{
+            CropPaneController.cropOptionOnAction(comboBox.getSelectionModel().getSelectedIndex(),selectedArea,group);
+        });
+        return comboBox;
+    }
 
 
 }

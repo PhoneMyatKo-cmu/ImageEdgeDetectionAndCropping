@@ -21,10 +21,12 @@ public class AreaSelection {
     private final Paint darkAreaColor = Color.color(0,0,0,0.5);
     private javafx.scene.image.ImageView mainImageView;
     private Image mainImage;
+    private String mode;
 
     public AreaSelection(ImageView imageView, Image image){
         this.mainImageView=imageView;
         this.mainImage=image;
+        this.mode="Free";
     }
 
     public void resizeRectangleByRatio(){
@@ -35,12 +37,22 @@ public class AreaSelection {
         return selectionRectangle;
     }
 
+    public void setSelectionRectangle(ResizableRectangle selectionRectangle) {
+        this.selectionRectangle = selectionRectangle;
+    }
 
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
 
     public ResizableRectangle selectArea(Group group) {
+
         this.group = group;
+        if(group.getChildren().size()>=2)
+        {System.out.println("Rectangle already added.");
+            return null;}
       /*  this.group.prefWidth(mainImage.getWidth());
-        this.group.prefHeight(mainImage.getHeight())*/;//fix a little check on it later
+        this.group.prefHeight(mainImage.getHeight())*///fix a little check on it later
 
 
         // group.getChildren().get(0) == mainImageView. We assume image view as base container layer
@@ -48,14 +60,38 @@ public class AreaSelection {
             this.group.getChildren().get(0).addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
             this.group.getChildren().get(0).addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
             this.group.getChildren().get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, onMouseReleasedEventHandler);
-          if(selectionRectangle==null){
+         // if(selectionRectangle==null){
               CropPaneController.clearSelection(group);
               rectangleStartX =30;
               rectangleStartY = 30;
+              if(mode=="Free")
               selectionRectangle=new ResizableRectangle(rectangleStartX,rectangleStartY,100,100,this.group);
-              CropPane.isAreaSelected=true;
-             // darkenOutsideRectangle(selectionRectangle);
-          }
+              else if(mode=="16/9")
+              selectionRectangle=new ResizableRectangleWithRatio1(rectangleStartX,rectangleStartY,100,this.group,16.0/9) ;
+              else if(mode=="4/3")
+                  selectionRectangle=new ResizableRectangleWithRatio1(rectangleStartX,rectangleStartY,100,this.group,4.0/3);
+              else if (mode=="1/1") {
+                  selectionRectangle=new ResizableRectangleWithRatio1(rectangleStartX,rectangleStartY,100,this.group,1.0/1);
+              }
+              else if (mode=="3/2") {
+                  selectionRectangle=new ResizableRectangleWithRatio1(rectangleStartX,rectangleStartY,100,this.group,3.0/2);
+              }
+              else  {
+                  selectionRectangle=new ResizableRectangleWithRatio1(rectangleStartX,rectangleStartY,100,this.group,5.0/4);
+              }
+
+
+            // darkenOutsideRectangle(selectionRectangle);
+         // }
+
+       /*    else {
+              selectionRectangle.setWidth(100);
+              selectionRectangle.setHeight(100);
+              selectionRectangle.setX(30);
+              selectionRectangle.setY(30);
+              group.getChildren().add(selectionRectangle);
+          }*/
+            CropPane.isAreaSelected=true;
 
         }
 
@@ -77,7 +113,7 @@ public class AreaSelection {
 
         selectionRectangle=null;
 
-        selectionRectangle = new ResizableRectangle(rectangleStartX, rectangleStartY, 0, 0, group);
+      //  selectionRectangle = new ResizableRectangle(rectangleStartX, rectangleStartY, 0, 0, group);
         System.out.println("On Mouse Press:"+selectionRectangle.getWidth()+","+selectionRectangle.getHeight());
 
      //  darkenOutsideRectangle(selectionRectangle);
@@ -93,8 +129,8 @@ public class AreaSelection {
         System.out.println("On Mouse Drag:"+offsetX+","+offsetY);
 
         if (offsetX > 0) {
-            if (event.getX() > mainImageView.getFitWidth()){
-                selectionRectangle.setWidth(mainImageView.getFitWidth() - rectangleStartX);
+            if (event.getX() > mainImageView.getBoundsInParent().getWidth()){
+                selectionRectangle.setWidth(mainImageView.getBoundsInParent().getWidth() - rectangleStartX);
             System.out.println("Drag stuck at x position:" + event.getX() + " image width+" + mainImage.getWidth());
         }
             else {
@@ -110,8 +146,8 @@ public class AreaSelection {
         }
 
         if (offsetY > 0) {
-            if (event.getY() > mainImageView.getFitHeight())
-                selectionRectangle.setHeight(mainImageView.getFitHeight() - rectangleStartY);
+            if (event.getY() > mainImageView.getBoundsInParent().getHeight())
+                selectionRectangle.setHeight(mainImageView.getBoundsInParent().getHeight() - rectangleStartY);
             else
                 selectionRectangle.setHeight(offsetY);
         } else {
