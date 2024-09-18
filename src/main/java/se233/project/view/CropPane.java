@@ -15,6 +15,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -45,6 +46,8 @@ public class CropPane extends BorderPane {
     //  public static BorderPane rootPane;
     public static ScrollPane scrollPane;
     public static Group selectionGroup;
+    public static Image blankImage;
+    public static CropBoxConfigPane cropBoxConfigPane;
 
 
     public CropPane() {
@@ -53,6 +56,7 @@ public class CropPane extends BorderPane {
         // rootPane = new BorderPane();
         secondLevelpane = new BorderPane();
         secondLevelpane.setPadding(new Insets(20, 20, 20, 20));
+        blankImage=new Image(Launcher.class.getResource("blank.png").toString());
         // Launcher.primaryStage.setMaximized(true);
 
         /*Control Bar Group*/
@@ -68,7 +72,8 @@ public class CropPane extends BorderPane {
         Button zoomOutBtn = new Button("Zoom Out");
         zoomInBtn.setVisible(false);
         zoomOutBtn.setVisible(false);
-        controlBar.getChildren().addAll(selectionBtn, clearSelectionBtn, nextImageBtn, cropBtn, zoomInBtn, zoomOutBtn);
+        Label zoomPercentLbl=new Label(100+"%");
+
 
         /*Image Instatiate*/
         mainImageView = new ImageView();
@@ -85,7 +90,7 @@ public class CropPane extends BorderPane {
         final AreaSelection areaSelection = new AreaSelection(mainImageView, mainImage);
         selectionGroup = new Group();
         ComboBox cropOptionBox=cropBox(areaSelection,selectionGroup);
-        controlBar.getChildren().add(cropOptionBox);
+        //controlBar.getChildren().add(cropOptionBox);
         /*Menu Bar*/
         final MenuBar menuBar = new MenuBar();
         final Menu menu1 = new Menu("File");
@@ -122,13 +127,16 @@ public class CropPane extends BorderPane {
         menu2.getItems().add(backToBtn);
         backToBtn.setOnAction(event -> {
             Launcher.primaryStage.setScene(new Scene(new InputPane("Crop")));
+            CropPane.wiList.clear();
+            CropPane.CroppedimageListView.getItems().clear();
+            CropPane.croppedFilesList.clear();
             System.out.println("BackBtn pressed.");
         });
 
 
-        selectionBtn.setOnAction(e -> areaSelection.selectArea(selectionGroup));
+        selectionBtn.setOnAction(e -> {areaSelection.selectArea(selectionGroup);cropBoxConfigPane.refresh(areaSelection.getSelectionRectangle());});
 
-        clearSelectionBtn.setOnAction(event -> CropPaneController.clearSelection(selectionGroup));
+        clearSelectionBtn.setOnAction(event -> {CropPaneController.clearSelection(selectionGroup);cropBoxConfigPane.refresh(null);});
 
 
         cropBtn.setOnAction(e -> {
@@ -139,18 +147,22 @@ public class CropPane extends BorderPane {
 
         nextImageBtn.setOnAction(e -> {
             CropPaneController.nextImageBtn(mainImageView, mainImage);
+            zoomPercentLbl.setText(100+"%");
             //CropPaneController.viewFullSize(mainImage);
         });
 
-        zoomInBtn.setOnAction(event -> CropPaneController.zoomIn(scrollPane));
-        zoomOutBtn.setOnAction(event -> CropPaneController.zoomOut(scrollPane));
-
+        zoomInBtn.setOnAction(event -> CropPaneController.zoomIn(scrollPane,zoomPercentLbl));
+        zoomOutBtn.setOnAction(event -> CropPaneController.zoomOut(scrollPane,zoomPercentLbl));
+        cropBoxConfigPane=new CropBoxConfigPane(areaSelection.getSelectionRectangle());
         selectionGroup.getChildren().add(mainImageView);
-        scrollPane = changeScrollPane(selectionGroup);
+        StackPane containerForImageView=new StackPane(selectionGroup);
+        scrollPane = changeScrollPane(containerForImageView);
         //CropPaneController.viewFullSize(mainImage);
         secondLevelpane.setTop(controlBar);
-        secondLevelpane.setLeft(scrollPane);
+        secondLevelpane.setLeft(cropBoxConfigPane);
+        secondLevelpane.setCenter(scrollPane);
         secondLevelpane.setRight(previewPane());
+        controlBar.getChildren().addAll(cropOptionBox,selectionBtn, clearSelectionBtn, nextImageBtn, cropBtn, zoomInBtn, zoomOutBtn,zoomPercentLbl);
 
         /*Test as scroll pane*/
         // rootPane.setCenter(selectionGroup);
@@ -180,14 +192,14 @@ public class CropPane extends BorderPane {
         containerPane.getChildren().add(previewImgView);
         containerPane.getChildren().add(pLabel);
         Image pImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(0));
-        previewImgView.setImage(pImage);
+        previewImgView.setImage(blankImage);
         containerPane.getChildren().add(CroppedimageListView);
         HBox btnBox = new HBox(30);
         btnBox.setAlignment(Pos.CENTER);
         Button saveBtn = new Button("Save");
         Button clearBtn = new Button("Clear List");
 
-        saveBtn.setOnAction(actionEvent -> CropPaneController.saveCroppedImage(Launcher.primaryStage));
+        saveBtn.setOnAction(actionEvent -> CropPaneController.saveCroppedImage());
         clearBtn.setOnAction(actionEvent -> CropPaneController.clearList());
         
         btnBox.getChildren().addAll(saveBtn, clearBtn);
@@ -222,11 +234,13 @@ public class CropPane extends BorderPane {
     }
 
 
-    public static ScrollPane changeScrollPane(Group selectionGroup) {
+    public static ScrollPane changeScrollPane(StackPane selectionGroup) {
         ScrollPane scrollPane = new ScrollPane(selectionGroup);
         scrollPane.setPrefViewportWidth(800);
         scrollPane.setPrefViewportHeight(400);
         scrollPane.setPannable(false);
+        selectionGroup.setMinWidth(scrollPane.getPrefViewportWidth());
+        selectionGroup.setMinHeight(scrollPane.getPrefViewportHeight());
         //CropPaneController.viewFullSize(mainImage);
 
         return scrollPane;
