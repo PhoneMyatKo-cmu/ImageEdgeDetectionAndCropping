@@ -1,21 +1,13 @@
 package se233.project.view;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.converter.IntegerStringConverter;
-import javafx.util.converter.NumberStringConverter;
-import se233.project.controller.viewcontrollers.EDSettingAreaController;
 import se233.project.model.EdgeDetectionAlgorithms;
 
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.text.NumberFormat;
-
 import static se233.project.model.EdgeDetectionAlgorithms.*;
+import static se233.project.controller.viewcontrollers.EDSettingAreaController.*;
 
 public class EDSettingArea extends VBox {
     private EDImageDisplayArea imageDisplayArea;
@@ -59,7 +51,6 @@ public class EDSettingArea extends VBox {
         weakThresholdSlider.setBlockIncrement(1);
         weakThresholdSlider.setMajorTickUnit(25);
         weakThresholdSlider.setMinorTickCount(25);
-        weakThresholdTextField.textProperty().bindBidirectional(weakThresholdSlider.valueProperty(), new DecimalFormat("###"));
         weakThresholdBox.getChildren().addAll(weakThresholdTextField, weakThresholdSlider, new Label("255"));
         // change threshold (strong for canny)
         thresholdBox = new HBox(5);
@@ -71,7 +62,6 @@ public class EDSettingArea extends VBox {
         thresholdSlider.setMajorTickUnit(25);
         thresholdSlider.setBlockIncrement(1);
         thresholdSlider.setMinorTickCount(25);
-        thresholdTextField.textProperty().bindBidirectional(thresholdSlider.valueProperty(), new DecimalFormat("###"));
         thresholdBox.getChildren().addAll(thresholdTextField, thresholdSlider, new Label("255"));
         // buttons
         HBox buttonBox = new HBox(30);
@@ -103,15 +93,23 @@ public class EDSettingArea extends VBox {
         // handlers
         kernelToggleGroup.selectedToggleProperty().addListener(((observableValue, oldV, newV) -> setKernelSize(((RadioButton) newV).getText())));
         cannyToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> setCannyType(((RadioButton) t1).getText())));
-        algorithmsComboBox.valueProperty().addListener(((observableValue, edgeDetectionAlgorithms, t1) -> EDSettingAreaController.setOnAlgorithmChange(t1, cannyDefault, cannyWeakStrong, kernelBox, weakThresholdBox, thresholdCheckBox)));
-        thresholdCheckBox.selectedProperty().addListener(((observableValue, aBoolean, t1) -> EDSettingAreaController.setOnDefaultThresholdChange(algorithmsComboBox.getValue(), t1, weakThresholdBox, thresholdBox)));
+        algorithmsComboBox.valueProperty().addListener(((observableValue, edgeDetectionAlgorithms, t1) -> setOnAlgorithmChange(t1, cannyDefault, cannyWeakStrong, kernelBox, weakThresholdBox, thresholdCheckBox)));
+        thresholdCheckBox.selectedProperty().addListener(((observableValue, aBoolean, t1) -> setOnDefaultThresholdChange(algorithmsComboBox.getValue(), t1, weakThresholdBox, thresholdBox)));
+        weakThresholdTextField.textProperty().addListener(((observableValue, oldValue, newValue) -> setOnThresholdTextInputChange(weakThresholdTextField, weakThresholdSlider, newValue)));
+        thresholdTextField.textProperty().addListener(((observableValue, oldValue, newValue) -> setOnThresholdTextInputChange(thresholdTextField, thresholdSlider, newValue)));
+        weakThresholdSlider.valueProperty().addListener(((observableValue, number, newVal) -> setOnThresholdSliderInput(weakThresholdTextField, newVal.intValue())));
+        thresholdSlider.valueProperty().addListener(((observableValue, number, newValue) -> setOnThresholdSliderInput(thresholdTextField, newValue.intValue())));
+        previewButton.setOnAction(e -> setOnPreview(algorithmsComboBox.getValue(), kernelSize, cannyType, thresholdCheckBox.isSelected(), Integer.parseInt(weakThresholdTextField.getText()), Integer.parseInt(thresholdTextField.getText()), imageDisplayArea, progressListView));
+        backButton.setOnAction(e -> setOnBack());
+        saveButton.setOnAction(e -> setOnSave(imageDisplayArea));
+        
+        // set default values
+        weakThresholdSlider.setValue(15);
+        thresholdSlider.setValue(65);
         thresholdCheckBox.setSelected(true);
         kernelToggleGroup.selectToggle(kernel3x3);
         cannyToggleGroup.selectToggle(cannyDefault);
         algorithmsComboBox.setValue(Canny);
-        previewButton.setOnAction(e -> EDSettingAreaController.setOnPreview(algorithmsComboBox.getValue(), kernelSize, cannyType, thresholdCheckBox.isSelected(), Integer.parseInt(weakThresholdTextField.getText()), Integer.parseInt(thresholdTextField.getText()), imageDisplayArea, progressListView));
-        backButton.setOnAction(e -> EDSettingAreaController.setOnBack());
-        saveButton.setOnAction(e -> EDSettingAreaController.setOnSave(imageDisplayArea));
     }
 
     public void setKernelSize(String kernelSize) {
