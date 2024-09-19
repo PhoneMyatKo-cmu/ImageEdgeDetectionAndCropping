@@ -47,6 +47,7 @@ public class EdgeDetectionTask extends Task<Image> {
             pi.progressProperty().bind(this.progressProperty());
         });
 
+        BufferedImage edgeImg = detectEdges(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile);
         for (int i = 0; i < 75; i++) {
             try {
                 Thread.sleep(20);
@@ -55,7 +56,6 @@ public class EdgeDetectionTask extends Task<Image> {
             }
             updateProgress(i, 100);
         }
-        BufferedImage edgeImg = detectEdges(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile);
         updateProgress(100, 100);
         if (edgeImg != null) {
             WritableImage img = SwingFXUtils.toFXImage(edgeImg, null);
@@ -79,18 +79,11 @@ public class EdgeDetectionTask extends Task<Image> {
             int[][] pixels = Grayscale.imgToGrayPixels(img);
             switch (algo) {
                 case Canny -> {
-                    if (defaultThreshold) {
-                        edgeDetector = new CannyEdgeDetector.Builder(pixels)
-                                .minEdgeSize(10)
-                                .L1norm(false)
-                                .build();
-                    } else {
-                        edgeDetector = new CannyEdgeDetector.Builder(pixels)
-                                .minEdgeSize(10)
-                                .thresholds(weakThreshold, strongThreshold)
-                                .L1norm(false)
-                                .build();
-                    }
+                    edgeDetector = new CannyEdgeDetector.Builder(pixels)
+                            .minEdgeSize(10)
+                            .thresholds(weakThreshold, strongThreshold)
+                            .L1norm(true)
+                            .build();
                 }
                 case Laplacian -> {
                     edgeDetector = new LaplacianEdgeDetector(pixels, kernelSize, defaultThreshold, strongThreshold);
@@ -109,7 +102,6 @@ public class EdgeDetectionTask extends Task<Image> {
                 }
             }
             boolean[][] edges = edgeDetector.getEdges();
-            System.out.println(cannyType);
 
             if (cannyType.equals("Weak Strong")) {
                 CannyEdgeDetector canny = (CannyEdgeDetector) edgeDetector;
