@@ -153,7 +153,7 @@ public class CropPane extends BorderPane {
 
         zoomInBtn.setOnAction(event -> CropPaneController.zoomIn(scrollPane,zoomPercentLbl));
         zoomOutBtn.setOnAction(event -> CropPaneController.zoomOut(scrollPane,zoomPercentLbl));
-        cropBoxConfigPane=new CropBoxConfigPane(areaSelection.getSelectionRectangle());
+        cropBoxConfigPane=new CropBoxConfigPane(areaSelection.getSelectionRectangle(),cropOptionBox );
         selectionGroup.getChildren().add(mainImageView);
         StackPane containerForImageView=new StackPane(selectionGroup);
         scrollPane = changeScrollPane(containerForImageView);
@@ -162,7 +162,7 @@ public class CropPane extends BorderPane {
         secondLevelpane.setLeft(cropBoxConfigPane);
         secondLevelpane.setCenter(scrollPane);
         secondLevelpane.setRight(previewPane());
-        controlBar.getChildren().addAll(cropOptionBox,selectionBtn, clearSelectionBtn, nextImageBtn, cropBtn, zoomInBtn, zoomOutBtn,zoomPercentLbl);
+        controlBar.getChildren().addAll(selectionBtn, clearSelectionBtn, nextImageBtn, cropBtn, zoomInBtn, zoomOutBtn,zoomPercentLbl);
 
         /*Test as scroll pane*/
         // rootPane.setCenter(selectionGroup);
@@ -175,6 +175,7 @@ public class CropPane extends BorderPane {
         zoomInBtn.setVisible(true);
         zoomOutBtn.setVisible(true);
         CropPaneController.viewFullSize(mainImage);
+        CropPaneController.centerStage(Launcher.primaryStage);
 
     }
 

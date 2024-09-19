@@ -6,7 +6,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.HBox;
-import javafx.util.Callback;
 
 public class CroppedListView extends ListView<HBox> {
     HBox hBox;

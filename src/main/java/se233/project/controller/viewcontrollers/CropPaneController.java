@@ -10,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import se233.project.Launcher;
 import se233.project.controller.CropSaveTask;
@@ -254,5 +255,18 @@ public class CropPaneController {
         alert.setContentText("Output Path Not Specify!");
         return alert;
 
+    }
+    public  static void centerStage(Stage stage) {
+        // Get the primary screen bounds
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+        // Calculate the new position of the stage
+        double stageWidth = stage.getWidth();
+        double stageHeight = stage.getHeight();
+
+        // Set the stage to the center of the screen and ensure it's within the screen bounds
+        stage.setX(Math.max((screenBounds.getWidth() - stageWidth) / 2, screenBounds.getMinX()));
+        //stage.setY(Math.max((screenBounds.getHeight() - stageHeight) / 2, screenBounds.getMinY()));
+        stage.setY(10);
     }
 }
