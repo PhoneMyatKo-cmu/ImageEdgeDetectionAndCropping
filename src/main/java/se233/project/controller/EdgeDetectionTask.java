@@ -42,15 +42,15 @@ public class EdgeDetectionTask extends Task<Image> {
 
     @Override
     protected Image call() {
-        Platform.runLater(() -> {
-            pi.setVisible(true);
-            pi.progressProperty().bind(this.progressProperty());
-        });
+//        Platform.runLater(() -> {
+//            pi.setVisible(true);
+//            pi.progressProperty().bind(this.progressProperty());
+//        });
 
         BufferedImage edgeImg = detectEdges(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile);
         for (int i = 0; i < 75; i++) {
             try {
-                Thread.sleep(20);
+                Thread.sleep(15);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

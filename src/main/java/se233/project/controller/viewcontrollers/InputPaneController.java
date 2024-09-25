@@ -42,7 +42,9 @@ public class InputPaneController {
 
     public static void setOnOutputBtn(DirectoryChooser outputDirectoryChooser, TextField outputField) {
         File file = outputDirectoryChooser.showDialog(Launcher.primaryStage);
-        outputField.setText(file.getAbsolutePath());
+        if (file != null) {
+            outputField.setText(file.getAbsolutePath());
+        }
     }
 
     public static void setOnContinueBtn(String mode, TextField outputField) {
