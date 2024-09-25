@@ -15,7 +15,8 @@ public class EDSettingArea extends VBox {
     private ComboBox<EdgeDetectionAlgorithms> algorithmsComboBox;
     private ToggleGroup kernelToggleGroup, cannyToggleGroup;
     private RadioButton cannyWeakStrong;
-    private HBox weakThresholdBox, thresholdBox, kernelBox, cannyBox;
+    private HBox  kernelBox, cannyBox;
+    private VBox weakThresholdBox, thresholdBox;
     private CheckBox thresholdCheckBox;
     private ProgressView progressListView;
 
@@ -42,7 +43,7 @@ public class EDSettingArea extends VBox {
         // default or custom threshold
         thresholdCheckBox = new CheckBox("Default Threshold");
         // change weak threshold for canny
-        weakThresholdBox = new HBox(5);
+        weakThresholdBox = new VBox(10);
         TextField weakThresholdTextField = new TextField();
         weakThresholdTextField.setPrefWidth(40);
         Slider weakThresholdSlider = new Slider(0, 255, 10);
@@ -51,9 +52,9 @@ public class EDSettingArea extends VBox {
         weakThresholdSlider.setBlockIncrement(1);
         weakThresholdSlider.setMajorTickUnit(25);
         weakThresholdSlider.setMinorTickCount(25);
-        weakThresholdBox.getChildren().addAll(weakThresholdTextField, weakThresholdSlider, new Label("255"));
+        weakThresholdBox.getChildren().addAll(new Label("Weak Threshold"), new HBox(5, weakThresholdTextField, weakThresholdSlider, new Label("255")));
         // change threshold (strong for canny)
-        thresholdBox = new HBox(5);
+        thresholdBox = new VBox(10);
         TextField thresholdTextField = new TextField();
         thresholdTextField.setPrefWidth(40);
         Slider thresholdSlider = new Slider(0, 255, 25);
@@ -62,7 +63,7 @@ public class EDSettingArea extends VBox {
         thresholdSlider.setMajorTickUnit(25);
         thresholdSlider.setBlockIncrement(1);
         thresholdSlider.setMinorTickCount(25);
-        thresholdBox.getChildren().addAll(thresholdTextField, thresholdSlider, new Label("255"));
+        thresholdBox.getChildren().addAll(new Label("Threshold"), new HBox(5, thresholdTextField, thresholdSlider, new Label("255")));
         // buttons
         HBox buttonBox = new HBox(30);
         Button backButton = new Button("Back");

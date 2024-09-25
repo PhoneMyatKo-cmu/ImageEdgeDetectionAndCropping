@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import se233.project.Launcher;
@@ -16,6 +17,8 @@ import se233.project.view.InputPane;
 import se233.project.view.ProgressView;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -62,16 +65,22 @@ public class EDSettingAreaController {
         try {
             for (int i = 0; i < Launcher.imageFiles.size(); i++) {
                 Image img = outputImages.get(Launcher.imageFiles.get(i));
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
+                BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics g = convertedImage.createGraphics();
+                g.drawImage(bufferedImage, 0, 0, null);
+                g.dispose();
                 String fileName = Launcher.imageFiles.get(i).getName();
                 String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
-                ImageIO.write(SwingFXUtils.fromFXImage(img, null), fileExtension, new File(Launcher.outputPath + File.separator + "EdgeDetected_" +  fileName));
+                ImageIO.write(convertedImage, fileExtension, new File(output.getPath() + File.separator + "EdgeDetected_" +  fileName));
             }
+            AlertDialog.showDialog("Saved", "Successfully saved EdgeDetection images to " + output.getPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void setOnAlgorithmChange(EdgeDetectionAlgorithms newAlgo, RadioButton defaultButton, RadioButton weakStrongButton, HBox kernelBox, HBox weakThresholdBox, CheckBox thresholdCheckBox) {
+    public static void setOnAlgorithmChange(EdgeDetectionAlgorithms newAlgo, RadioButton defaultButton, RadioButton weakStrongButton, HBox kernelBox, VBox weakThresholdBox, CheckBox thresholdCheckBox) {
         switch (newAlgo) {
             case Canny -> {
                 kernelBox.setVisible(false);
@@ -99,7 +108,7 @@ public class EDSettingAreaController {
         }
     }
 
-    public static void setOnDefaultThresholdChange(EdgeDetectionAlgorithms algo, boolean defaultThreshold, HBox weakThresholdBox, HBox thresholdBox) {
+    public static void setOnDefaultThresholdChange(EdgeDetectionAlgorithms algo, boolean defaultThreshold, VBox weakThresholdBox, VBox thresholdBox) {
         thresholdBox.setVisible(!defaultThreshold);
     }
 
