@@ -1,8 +1,10 @@
 package se233.project.controller.viewcontrollers;
 
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import se233.project.Launcher;
@@ -15,9 +17,13 @@ import se233.project.view.InputPane;
 import se233.project.view.ProgressView;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static se233.project.model.EdgeDetectionAlgorithms.Canny;
 
@@ -30,14 +36,21 @@ public class EDSettingAreaController {
 
     public static void setOnPreview(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, EDImageDisplayArea imageDisplayArea, ProgressView progressView) {
         try {
+            ExecutorService executorService = Executors.newFixedThreadPool(10);
             if (algo.equals(Canny) && weakThreshold > strongThreshold) {
                 throw new InvalidThresholdException(weakThreshold, strongThreshold);
             }
             for (int i = 0; i < Launcher.imageFiles.size(); i++) {
                 File imgFile = Launcher.imageFiles.get(i);
-                EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, progressView.get(i));
-                new Thread(task).start();
+                ProgressIndicator pi = progressView.get(i);
+                EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, pi);
+                Platform.runLater(() -> {
+                    pi.progressProperty().bind(task.progressProperty());
+                    pi.setVisible(true);
+                });
+                executorService.submit(task);
             }
+            executorService.shutdown();
         } catch (Exception e) {
             AlertDialog.showDialog(e);
         }
@@ -52,15 +65,22 @@ public class EDSettingAreaController {
         try {
             for (int i = 0; i < Launcher.imageFiles.size(); i++) {
                 Image img = outputImages.get(Launcher.imageFiles.get(i));
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
+                BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics g = convertedImage.createGraphics();
+                g.drawImage(bufferedImage, 0, 0, null);
+                g.dispose();
                 String fileName = Launcher.imageFiles.get(i).getName();
-                ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png", new File(Launcher.outputPath + File.separator + "EdgeDetected_" +  fileName));
+                String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
+                ImageIO.write(convertedImage, fileExtension, new File(output.getPath() + File.separator + "EdgeDetected_" +  fileName));
             }
+            AlertDialog.showDialog("Saved", "Successfully saved EdgeDetection images to " + output.getPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void setOnAlgorithmChange(EdgeDetectionAlgorithms newAlgo, RadioButton defaultButton, RadioButton weakStrongButton, HBox kernelBox, HBox weakThresholdBox, CheckBox thresholdCheckBox) {
+    public static void setOnAlgorithmChange(EdgeDetectionAlgorithms newAlgo, RadioButton defaultButton, RadioButton weakStrongButton, HBox kernelBox, VBox weakThresholdBox, CheckBox thresholdCheckBox) {
         switch (newAlgo) {
             case Canny -> {
                 kernelBox.setVisible(false);
@@ -88,7 +108,7 @@ public class EDSettingAreaController {
         }
     }
 
-    public static void setOnDefaultThresholdChange(EdgeDetectionAlgorithms algo, boolean defaultThreshold, HBox weakThresholdBox, HBox thresholdBox) {
+    public static void setOnDefaultThresholdChange(EdgeDetectionAlgorithms algo, boolean defaultThreshold, VBox weakThresholdBox, VBox thresholdBox) {
         thresholdBox.setVisible(!defaultThreshold);
     }
 

@@ -13,11 +13,13 @@ import se233.project.Launcher;
 import se233.project.controller.AlertDialog;
 import se233.project.controller.Unzip;
 import se233.project.controller.customexceptions.EmptyFieldException;
+import se233.project.controller.customexceptions.InvalidFileTypeException;
 import se233.project.view.CropPane;
 import se233.project.view.EdgeDetectionPane;
 import se233.project.view.MainMenu;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class InputPaneController {
@@ -26,7 +28,13 @@ public class InputPaneController {
         if (files != null) {
             for (File file : files) {
                 if (file.getName().endsWith(".zip")) {
-                    List<File> zipFiles = Unzip.unzip(file);
+                    List<File> zipFiles = null;
+                    try {
+                        zipFiles = new ArrayList<>();
+                        Unzip.unzip(file, zipFiles);
+                    } catch (InvalidFileTypeException e) {
+                        AlertDialog.showDialog(e);
+                    }
                     for (File zipFile : zipFiles) {
                         imageList.getItems().add(zipFile.getName());
                         Launcher.imageFiles.add(zipFile);
@@ -89,9 +97,23 @@ public class InputPaneController {
             int totalFiles = db.getFiles().size();
             for (int i = 0; i < totalFiles; i++) {
                 File file = db.getFiles().get(i);
-                fileName = file.getName();
-                imageList.getItems().add(fileName);
-                Launcher.imageFiles.add(file);
+                if (file.getName().endsWith(".zip")) {
+                    List<File> zipFiles = null;
+                    try {
+                        zipFiles = new ArrayList<>();
+                        Unzip.unzip(file, zipFiles);
+                    } catch (InvalidFileTypeException e) {
+                        AlertDialog.showDialog(e);
+                    }
+                    for (File zipFile : zipFiles) {
+                        imageList.getItems().add(zipFile.getName());
+                        Launcher.imageFiles.add(zipFile);
+                    }
+                } else {
+                    fileName = file.getName();
+                    imageList.getItems().add(fileName);
+                    Launcher.imageFiles.add(file);
+                }
             }
         }
         dragEvent.setDropCompleted(success);
