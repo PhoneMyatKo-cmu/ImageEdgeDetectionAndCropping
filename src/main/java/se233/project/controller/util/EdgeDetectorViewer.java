@@ -1,23 +1,10 @@
 /**************************************************************************
  * @author Jason Altschuler
- * 
+ *
  * Displays results of a few edge detectors.
  *************************************************************************/
 
 package se233.project.controller.util;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
-import se233.project.model.GaussianEdgeDetector;
-import se233.project.model.PrewittEdgeDetector;
-import se233.project.model.RobertsCrossEdgeDetector;
-import se233.project.model.SobelEdgeDetector;
-import se233.project.controller.grayscale.Grayscale;
-import se233.project.controller.ui.ImageViewer;
 
 public class EdgeDetectorViewer {
 //

@@ -25,6 +25,7 @@ public class MainMenu extends VBox {
         cropBtn.setOnAction(e -> {
             Launcher.imageFiles.clear();
             Launcher.primaryStage.setScene(new Scene(new InputPane("Crop")));
+            System.out.println(Launcher.primaryStage.getWidth()+","+Launcher.primaryStage.getHeight());
         });
     }
 }

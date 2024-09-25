@@ -1,6 +1,5 @@
 package se233.project.controller.viewcontrollers;
 
-import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -19,8 +18,6 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static se233.project.model.EdgeDetectionAlgorithms.Canny;
 
@@ -33,21 +30,14 @@ public class EDSettingAreaController {
 
     public static void setOnPreview(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, EDImageDisplayArea imageDisplayArea, ProgressView progressView) {
         try {
-            ExecutorService executorService = Executors.newFixedThreadPool(10);
             if (algo.equals(Canny) && weakThreshold > strongThreshold) {
                 throw new InvalidThresholdException(weakThreshold, strongThreshold);
             }
             for (int i = 0; i < Launcher.imageFiles.size(); i++) {
                 File imgFile = Launcher.imageFiles.get(i);
-                ProgressIndicator pi = progressView.get(i);
-                EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, pi);
-                Platform.runLater(() -> {
-                    pi.progressProperty().bind(task.progressProperty());
-                    pi.setVisible(true);
-                });
-                executorService.submit(task);
+                EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, progressView.get(i));
+                new Thread(task).start();
             }
-            executorService.shutdown();
         } catch (Exception e) {
             AlertDialog.showDialog(e);
         }
@@ -63,8 +53,7 @@ public class EDSettingAreaController {
             for (int i = 0; i < Launcher.imageFiles.size(); i++) {
                 Image img = outputImages.get(Launcher.imageFiles.get(i));
                 String fileName = Launcher.imageFiles.get(i).getName();
-                String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
-                ImageIO.write(SwingFXUtils.fromFXImage(img, null), fileExtension, new File(Launcher.outputPath + File.separator + "EdgeDetected_" +  fileName));
+                ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png", new File(Launcher.outputPath + File.separator + "EdgeDetected_" +  fileName));
             }
         } catch (IOException e) {
             e.printStackTrace();

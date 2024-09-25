@@ -7,7 +7,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import se233.project.Launcher;
@@ -58,7 +57,8 @@ public class InputPaneController {
             if (mode.equals("EdgeDetection")) {
                 Launcher.primaryStage.setScene(new Scene(new EdgeDetectionPane()));
             } else if (mode.equals("Crop")) {
-                 Launcher.primaryStage.setScene(new Scene(new CropPane()));
+                Launcher.primaryStage.setScene(new Scene(new CropPane()));
+                Launcher.primaryStage.setMaximized(false);
             }
             Launcher.outputPath = outputField.getText();
         } catch (Exception e) {

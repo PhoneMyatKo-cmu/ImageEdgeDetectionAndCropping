@@ -1,10 +1,15 @@
 package se233.project.view;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.collections.ObservableMap;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import se233.project.controller.viewcontrollers.CropPaneController;
 import se233.project.model.ResizableRectangle;
 import se233.project.model.ResizableRectangleWithRatio1;
 
@@ -13,18 +18,22 @@ public class CropBoxConfigPane extends VBox {
     TextField widthField;
     TextField heightField;
     ComboBox cropOptionBox;
+    public static ToggleButton croppingOnOff;
+    public Button cropButton;
 
-    public CropBoxConfigPane(ResizableRectangle rectangle, ComboBox cropOption) {
+    public CropBoxConfigPane(ResizableRectangle rectangle, ComboBox cropOption, Group group) {
         super(30);
         this.rectangle = rectangle;
         setAlignment(Pos.CENTER);
         setWidth(200);
         widthField = new TextField();
         heightField = new TextField();
+        croppingOnOff=new ToggleButton("Cropping Off");
+        cropButton = new Button("Crop");
+
+
         Label titleLbl=new Label("Crop Settings");
         this.cropOptionBox=cropOption;
-        widthField.setPrefWidth(50);
-        heightField.setPrefWidth(50);
         HBox dimensionBox = new HBox(10);
         dimensionBox.setAlignment(Pos.CENTER);
         dimensionBox.getChildren().addAll(widthField, heightField);
@@ -34,6 +43,69 @@ public class CropBoxConfigPane extends VBox {
         Label heightLbl = new Label("Height");
         lblBox.getChildren().addAll(widthLbl, heightLbl);
         Button applyBtn = new Button("Apply");
+
+
+        this.getChildren().addAll(titleLbl,croppingOnOff,cropOptionBox,cropButton,lblBox, dimensionBox, applyBtn);
+        this.setPadding(new Insets(20, 20, 20, 20));
+        this.setPrefHeight(400);
+        configToggle(group,applyBtn);
+        initialize(applyBtn);
+
+    }
+
+    public void refresh(ResizableRectangle rectangle) {
+        if (rectangle == null) {
+            widthField.setText("" + 0);
+            heightField.setText("" + 0);
+            return;
+        } else heightField.setEditable(!(rectangle instanceof ResizableRectangleWithRatio1));
+        if(rectangle instanceof ResizableRectangleWithRatio1)
+            heightField.setStyle("-fx-background-color: darkgray");
+        else
+            heightField.setStyle(null);
+        this.rectangle = rectangle;
+        widthField.setText(String.format("%.2f", rectangle.getWidth()));
+        heightField.setText(String.format("%.2f", rectangle.getHeight()));
+    }
+
+    public void configToggle(Group group,Button applyBtn) {
+      croppingOnOff.selectedProperty().addListener((observable, oldValue, newValue) -> {
+          if(croppingOnOff.isSelected()){
+              croppingOnOff.setText("Cropping On");
+              CropPane.areaSelection.selectArea(group);
+              refresh(CropPane.areaSelection.getSelectionRectangle());
+
+          }
+          else{
+              croppingOnOff.setText("Cropping Off");
+              CropPaneController.clearSelection(group);
+              refresh(null);
+          }
+          cropButton.setDisable(!croppingOnOff.isSelected());
+          cropOptionBox.setDisable(!croppingOnOff.isSelected());
+          widthField.setDisable(!croppingOnOff.isSelected());
+          heightField.setDisable(!croppingOnOff.isSelected());
+          applyBtn.setDisable(!croppingOnOff.isSelected());
+
+
+      });
+    }
+
+    public void initialize(Button applyBtn){
+        cropButton.setDisable(true);
+        cropOptionBox.setDisable(true);
+        widthField.setDisable(true);
+        heightField.setDisable(true);
+        applyBtn.setDisable(true);
+        widthField.setPrefWidth(50);
+        heightField.setPrefWidth(50);
+
+        cropButton.setOnAction(actionEvent -> {
+            if (CropPane.isAreaSelected) {
+                CropPaneController.cropImage(CropPane.areaSelection.getSelectionRectangle().getBoundsInParent(), CropPane.mainImageView);
+            }
+        });
+
         applyBtn.setOnAction(actionEvent -> {
             double width;
             double height;
@@ -53,7 +125,7 @@ public class CropBoxConfigPane extends VBox {
             }
             if (width + this.rectangle.getX() > CropPane.mainImageView.getBoundsInParent().getWidth() | height + this.rectangle.getY() > CropPane.mainImageView.getBoundsInParent().getHeight()) {
 
-               /* width = CropPane.mainImageView.getBoundsInParent().getWidth() - this.rectangle.getX();*/
+                /* width = CropPane.mainImageView.getBoundsInParent().getWidth() - this.rectangle.getX();*/
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setContentText("Crop Size Cannot Be Bigger Than Image Size.");
                 alert.showAndWait();
@@ -81,24 +153,5 @@ public class CropBoxConfigPane extends VBox {
             heightField.setText(String.format("%.2f", height));
         });
 
-        this.getChildren().addAll(titleLbl,cropOptionBox,lblBox, dimensionBox, applyBtn);
-        this.setPadding(new Insets(20, 20, 20, 20));
-        this.setPrefHeight(400);
-
-    }
-
-    public void refresh(ResizableRectangle rectangle) {
-        if (rectangle == null) {
-            widthField.setText("" + 0);
-            heightField.setText("" + 0);
-            return;
-        } else heightField.setEditable(!(rectangle instanceof ResizableRectangleWithRatio1));
-        if(rectangle instanceof ResizableRectangleWithRatio1)
-            heightField.setStyle("-fx-background-color: darkgray");
-        else
-            heightField.setStyle(null);
-        this.rectangle = rectangle;
-        widthField.setText(String.format("%.2f", rectangle.getWidth()));
-        heightField.setText(String.format("%.2f", rectangle.getHeight()));
     }
 }

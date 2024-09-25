@@ -6,6 +6,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import se233.project.view.CropPane;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -18,12 +19,11 @@ public class CropSaveTask extends Task<Void> {
     private final String fileExtension;
     private final File imgFileForesee;
 
-    public CropSaveTask(int finalI,String fileExtension,File imgFileForesee) {
-        this.finalI=finalI;
-        this.imgFileForesee=imgFileForesee;
-        this.fileExtension=fileExtension;
+    public CropSaveTask(int finalI, String fileExtension, File imgFileForesee) {
+        this.finalI = finalI;
+        this.imgFileForesee = imgFileForesee;
+        this.fileExtension = fileExtension;
     }
-
 
 
     @Override
@@ -32,7 +32,6 @@ public class CropSaveTask extends Task<Void> {
         BufferedImage bufImageARGB = SwingFXUtils.fromFXImage(CropPane.wiList.get(finalI), null);
         BufferedImage bufImageRGB = new BufferedImage(bufImageARGB.getWidth(),
                 bufImageARGB.getHeight(), BufferedImage.OPAQUE);
-
         Graphics2D graphics = bufImageRGB.createGraphics();
         graphics.drawImage(bufImageARGB, 0, 0, null);
 
@@ -47,11 +46,10 @@ public class CropSaveTask extends Task<Void> {
             ImageIO.write(bufImageRGB, fileExtension, imgFileForesee);
         } catch (IOException e) {
             cancel();
-            e.printStackTrace();
+            System.out.println(e.getMessage());
 
-        }
 
-        finally {
+        } finally {
             graphics.dispose();
             System.gc();
         }
@@ -73,21 +71,22 @@ public class CropSaveTask extends Task<Void> {
         );
     }
 
-    protected void cancelled(){Platform.runLater(() -> {
+    protected void cancelled() {
+        Platform.runLater(() -> {
 
-        if (CropPane.CroppedimageListView.getItems().get(finalI).getChildren().size() > 3) {
-            CropPane.CroppedimageListView.getItems().get(finalI).getChildren().remove(2);
-        }
-        ProgressIndicator progressIndicator=(ProgressIndicator)(CropPane.CroppedimageListView.getItems().get(finalI).getChildren().get(1));
-        progressIndicator.progressProperty().unbind();
-        progressIndicator.setProgress(-1);
+            if (CropPane.CroppedimageListView.getItems().get(finalI).getChildren().size() > 3) {
+                CropPane.CroppedimageListView.getItems().get(finalI).getChildren().remove(2);
+            }
+            ProgressIndicator progressIndicator = (ProgressIndicator) (CropPane.CroppedimageListView.getItems().get(finalI).getChildren().get(1));
+            progressIndicator.progressProperty().unbind();
+            progressIndicator.setProgress(-1);
 
-        CropPane.CroppedimageListView.getItems().get(finalI).getChildren().add(2,new Label("Save Failed!"));
-       // CropPaneController.errorNum++;
-
-    });
+            CropPane.CroppedimageListView.getItems().get(finalI).getChildren().add(2, new Label("Save Failed!"));
 
 
-}
+        });
+
+
+    }
 
 }
