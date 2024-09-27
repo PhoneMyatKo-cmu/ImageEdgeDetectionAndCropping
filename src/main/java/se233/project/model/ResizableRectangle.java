@@ -13,13 +13,12 @@ import se233.project.view.CropPane;
 public class ResizableRectangle extends Rectangle {
 
     private static final double RESIZER_SQUARE_SIDE = 8;
-    private final Paint darkAreaColor = Color.color(0, 0, 0, 0.2);
     private double rectangleStartX;
     private double rectangleStartY;
     private double mouseClickPozX;
     private double mouseClickPozY;
-    private Paint resizerSquareColor = Color.WHITE;
-    private Paint rectangleStrokeColor = Color.BLUE;
+    private final Paint resizerSquareColor = Color.WHITE;
+    private final Paint rectangleStrokeColor = Color.BLUE;
 
     public ResizableRectangle(double x, double y, double width, double height, Group group) {
 

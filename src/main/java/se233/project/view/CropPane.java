@@ -18,6 +18,7 @@ import se233.project.Launcher;
 import se233.project.controller.viewcontrollers.CropPaneController;
 import se233.project.model.AreaSelection;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -72,7 +73,11 @@ public class CropPane extends BorderPane {
 
         /*Image Instantiate*/
         mainImageView = new ImageView();
-        mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.getFirst());
+        try {
+            mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.getFirst());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         mainImageView.setImage(mainImage);
         mainImageView.setFitWidth(800);
         mainImageView.setFitHeight(400);
@@ -129,7 +134,7 @@ public class CropPane extends BorderPane {
 
         zoomInBtn.setOnAction(event -> CropPaneController.zoomIn(scrollPane, zoomPercentLbl,selectionGroup));
 
-        zoomOutBtn.setOnAction(event -> CropPaneController.zoomOut(scrollPane, zoomPercentLbl,selectionGroup));
+        zoomOutBtn.setOnAction(event -> CropPaneController.zoomOut(scrollPane, zoomPercentLbl,selectionGroup,cropBoxConfigPane ));
 
         selectionGroup.getChildren().add(mainImageView);
         cropBoxConfigPane = new CropBoxConfigPane(areaSelection.getSelectionRectangle(), cropOptionBox,selectionGroup);
@@ -194,7 +199,6 @@ public class CropPane extends BorderPane {
         containerPane.setSpacing(10);
         containerPane.setPadding(new Insets(10, 10, 10, 10));
         containerPane.getChildren().add(previewImagePane);
-        Image pImage = CropPaneController.convertFileToImage(Launcher.imageFiles.getFirst());
         previewImgView.setImage(blankImage);
         containerPane.getChildren().add(CroppedimageListView);
         HBox btnBox = new HBox(30);

@@ -1,8 +1,5 @@
 package se233.project.view;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.collections.ObservableMap;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -17,11 +14,11 @@ public class CropBoxConfigPane extends VBox {
     ResizableRectangle rectangle;
     TextField widthField;
     TextField heightField;
-    ComboBox cropOptionBox;
+    ComboBox<String> cropOptionBox;
     public static ToggleButton croppingOnOff;
     public Button cropButton;
 
-    public CropBoxConfigPane(ResizableRectangle rectangle, ComboBox cropOption, Group group) {
+    public CropBoxConfigPane(ResizableRectangle rectangle, ComboBox<String> cropOption, Group group) {
         super(30);
         this.rectangle = rectangle;
         setAlignment(Pos.CENTER);
@@ -139,13 +136,6 @@ public class CropBoxConfigPane extends VBox {
                 return;
 
             }
-
-          /*  if (height + this.rectangle.getY() > CropPane.mainImageView.getBoundsInParent().getHeight()) {
-                height = CropPane.mainImageView.getBoundsInParent().getHeight() - this.rectangle.getY();
-            }
-            else if(height<=0){
-                return;
-            }*/
 
             this.rectangle.setWidth(width);
             this.rectangle.setHeight(height);

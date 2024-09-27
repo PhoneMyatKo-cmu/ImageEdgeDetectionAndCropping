@@ -21,13 +21,14 @@ import se233.project.view.CropBoxConfigPane;
 import se233.project.view.CropPane;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@SuppressWarnings("ALL")
+
 public class CropPaneController {
     public static double zoomFactor = 1;
-    private static ExecutorService service= Executors.newFixedThreadPool(15);
+    private static final ExecutorService service= Executors.newFixedThreadPool(15);
 
     public static void cropImage(Bounds bounds, ImageView imageView) {
         int width = (int) bounds.getWidth();
@@ -43,8 +44,10 @@ public class CropPaneController {
         CropPane.previewImgList.add(new ImageView(croppedImage));
         CropPane.croppedFilesList.add(Launcher.imageFiles.get(CropPane.imageIndex));
         CropPane.refreshPreview(croppedImage);
+        addToCroppedList();
+    }
 
-        /*Added To Preview Pane*/
+    public static void addToCroppedList(){
         HBox croppedHbox = new HBox(20);
         croppedHbox.setOnMouseClicked(event -> {
             int selectedIndex = CropPane.CroppedimageListView.getSelectionModel().getSelectedIndex();
@@ -72,7 +75,7 @@ public class CropPaneController {
     }
 
     public static void saveCroppedImage() {
-        if (CropPane.wiList.isEmpty() || CropPane.wiList == null) {
+        if (CropPane.wiList.isEmpty()) {
             System.out.println("No Cropped Image..");
             return;
         }
@@ -82,9 +85,8 @@ public class CropPaneController {
             String fileFullName = CropPane.croppedFilesList.get(i).getName();
             String fileName = fileFullName.substring(0, fileFullName.length() - 4) + "Cropped";
             final File imgFileForesee = new File(Launcher.outputPath + "\\" + fileName + i + "." + fileExtension);
-            int finalI = i;
-            CropSaveTask cropSaveTask = new CropSaveTask(finalI, fileExtension, imgFileForesee);
-            CropPane.CroppedimageListView.modifyListCell(finalI, cropSaveTask);
+            CropSaveTask cropSaveTask = new CropSaveTask(i, fileExtension, imgFileForesee);
+            CropPane.CroppedimageListView.modifyListCell(i, cropSaveTask);
             service.submit(cropSaveTask);
 
         }
@@ -93,12 +95,12 @@ public class CropPaneController {
         System.out.println("Save called.");
     }
 
-    public static Image convertFileToImage(File imageFile) {
-        Image image = null;
+    public static Image convertFileToImage(File imageFile) throws IOException {
+        Image image;
         try (FileInputStream fileInputStream = new FileInputStream(imageFile)) {
             image = new Image(fileInputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw e;
         }
         return image;
     }
@@ -174,6 +176,9 @@ public class CropPaneController {
     }
 
     public static void viewFullSize(Image mainImage) {
+        if(mainImage==null){
+            throw new NullPointerException("mainImage is null");
+        }
         CropPane.mainImageView.setPreserveRatio(false);
         CropPane.mainImageView.setFitHeight(mainImage.getHeight());
         CropPane.mainImageView.setFitWidth(mainImage.getWidth());
@@ -191,7 +196,7 @@ public class CropPaneController {
     }
 
 
-    public static void zoomOut(ScrollPane scrollPane, Label zoomPercentLbl,Group group) {
+    public static void zoomOut(ScrollPane scrollPane, Label zoomPercentLbl, Group group, CropBoxConfigPane configPane) {
         if(zoomFactor<0.5)
             return;
         double zoomIncrement = 1.1;
@@ -202,14 +207,15 @@ public class CropPaneController {
         ImageView imageView=(ImageView) (group.getChildren().getFirst());
         while (isOutOfBound(rectangle,imageView) )
         {
-           if(rectangle.getWidth()<=10){
-               rectangle.setX(imageView.getBoundsInLocal().getWidth()-8);
+           if(rectangle.getWidth()<=0 || rectangle.getHeight()<=0){
+               //rectangle.setX(imageView.getBoundsInLocal().getWidth()-41);
+               CropBoxConfigPane.croppingOnOff.setSelected(false);
                break;
            }
-           if(rectangle.getHeight()<=10){
-               rectangle.setY(imageView.getBoundsInLocal().getHeight()-8);
+        /*   if(rectangle.getHeight()<=40){
+               rectangle.setY(imageView.getBoundsInLocal().getHeight()-41);
                break;
-           }
+           }*/
             rectangle.setWidth(rectangle.getWidth()-1);
             if(rectangle instanceof ResizableRectangleWithRatio1){
                 rectangle.setHeight(rectangle.getHeight()-(1/((ResizableRectangleWithRatio1) rectangle).aspect_ratio));
@@ -218,6 +224,8 @@ public class CropPaneController {
                 double aspect_ratio=rectangle.getWidth()/rectangle.getHeight();
             rectangle.setHeight(rectangle.getHeight()-(1/aspect_ratio));}
         }
+        configPane.refresh(rectangle);
+
 
     }
 
@@ -244,36 +252,50 @@ public class CropPaneController {
     }
 
     public static void nextImageBtn(ImageView mainImageView, Image mainImage) {
+        if(Launcher.imageFiles.size()==1){
+            return;
+        }
         zoomFactor = 1;
+
         if (CropPane.imageIndex >= Launcher.imageFiles.size() - 1) {
             CropPane.imageIndex = -1;
 
         }
-        if (CropPane.imageIndex < Launcher.imageFiles.size()) {
-
-            CropPane.imageIndex++;
+        CropPane.imageIndex++;
+        try {
             mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(CropPane.imageIndex));
             mainImageView.setImage(mainImage);
             viewFullSize(mainImage);
-
         }
+        catch (IOException | NullPointerException e) {
+            System.err.println(e.getMessage());
+        }
+       CropBoxConfigPane.croppingOnOff.setSelected(false);
+
+
     }
 
     public static void previousImageBtn(ImageView mainImageView, Image mainImage) {
-
+        if(Launcher.imageFiles.size()==1){
+            return;
+        }
             zoomFactor = 1;
             if (CropPane.imageIndex <=0) {
                 CropPane.imageIndex = Launcher.imageFiles.size() ;
 
             }
-            if (CropPane.imageIndex >-1) {
+        CropPane.imageIndex--;
+        try{
+            mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(CropPane.imageIndex));
+            mainImageView.setImage(mainImage);
+            viewFullSize(mainImage);
+        }
+        catch (IOException | NullPointerException e){
+           System.err.println(e.getMessage());
+        }
+        CropBoxConfigPane.croppingOnOff.setSelected(false);
 
-                CropPane.imageIndex--;
-                mainImage = CropPaneController.convertFileToImage(Launcher.imageFiles.get(CropPane.imageIndex));
-                mainImageView.setImage(mainImage);
-                viewFullSize(mainImage);
 
-            }
 
     }
 

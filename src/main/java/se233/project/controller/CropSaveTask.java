@@ -6,7 +6,6 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import se233.project.view.CropPane;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -38,7 +37,6 @@ public class CropSaveTask extends Task<Void> {
         for (int i = 0; i <= 100; i++) {
             updateProgress(i, 100);
             TimeUnit.MILLISECONDS.sleep(10);
-            System.out.println("Save Progress:" + i);
 
         }
 
@@ -46,15 +44,14 @@ public class CropSaveTask extends Task<Void> {
             ImageIO.write(bufImageRGB, fileExtension, imgFileForesee);
         } catch (IOException e) {
             cancel();
-            System.out.println(e.getMessage());
+           /* throw e;*/
+           // System.out.println(e.getMessage());
 
 
         } finally {
             graphics.dispose();
             System.gc();
         }
-        System.out.println("Save Task called.");
-
         return null;
     }
 
