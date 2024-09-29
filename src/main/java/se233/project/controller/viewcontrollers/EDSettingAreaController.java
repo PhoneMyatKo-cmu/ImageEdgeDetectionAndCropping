@@ -28,35 +28,37 @@ import java.util.concurrent.Executors;
 import static se233.project.model.EdgeDetectionAlgorithms.Canny;
 
 public class EDSettingAreaController {
+    private static boolean edgeDetected = false;
+
     public static void setOnBack() {
         Launcher.imageFiles.clear();
         Launcher.primaryStage.setScene(new Scene(new InputPane("EdgeDetection")));
         Launcher.primaryStage.setMaximized(false);
     }
 
-    public static void setOnPreview(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, EDImageDisplayArea imageDisplayArea, ProgressView progressView) {
-        try {
-            ExecutorService executorService = Executors.newFixedThreadPool(10);
-            if (algo.equals(Canny) && weakThreshold > strongThreshold) {
-                throw new InvalidThresholdException(weakThreshold, strongThreshold);
-            }
-            for (int i = 0; i < Launcher.imageFiles.size(); i++) {
-                File imgFile = Launcher.imageFiles.get(i);
-                ProgressIndicator pi = progressView.get(i);
-                EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, pi);
-                Platform.runLater(() -> {
-                    pi.progressProperty().bind(task.progressProperty());
-                    pi.setVisible(true);
-                });
-                executorService.submit(task);
-            }
-            executorService.shutdown();
-        } catch (Exception e) {
-            AlertDialog.showDialog(e);
+    public static void setOnPreview(EdgeDetectionAlgorithms algo, String kernelSize, String cannyType, boolean defaultThreshold, int weakThreshold, int strongThreshold, EDImageDisplayArea imageDisplayArea, ProgressView progressView) throws InvalidThresholdException {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        if (algo.equals(Canny) && weakThreshold > strongThreshold) {
+            throw new InvalidThresholdException(weakThreshold, strongThreshold);
         }
+        for (int i = 0; i < Launcher.imageFiles.size(); i++) {
+            File imgFile = Launcher.imageFiles.get(i);
+            ProgressIndicator pi = progressView.get(i);
+            EdgeDetectionTask task = new EdgeDetectionTask(algo, kernelSize, cannyType, defaultThreshold, weakThreshold, strongThreshold, imgFile, imageDisplayArea, i, pi);
+            Platform.runLater(() -> {
+                pi.progressProperty().bind(task.progressProperty());
+                pi.setVisible(true);
+            });
+            executorService.submit(task);
+        }
+        executorService.shutdown();
+        edgeDetected = true;
     }
 
-    public static void setOnSave(EDImageDisplayArea imageDisplayArea) {
+    public static void setOnSave(EDImageDisplayArea imageDisplayArea) throws RuntimeException {
+        if (!edgeDetected) {
+            throw new RuntimeException("Edges are not detected yet.");
+        }
         Map<File, Image> outputImages = imageDisplayArea.getOutputImages();
         File output = new File(Launcher.outputPath);
         if (!output.exists()) {
@@ -112,24 +114,20 @@ public class EDSettingAreaController {
         thresholdBox.setVisible(!defaultThreshold);
     }
 
-    public static void setOnThresholdTextInputChange(TextField thresholdInputField, Slider thresholdSlider, String newValue) {
-        try {
-            if (newValue.isEmpty()) {
-                thresholdInputField.setText("0");
-            } else if (!newValue.matches("\\d*")) {
-                thresholdInputField.setText(newValue.replaceAll("[^\\d]", ""));
-            } else if (newValue.length() > 3) {
-                thresholdInputField.setText(newValue.substring(1, 4));
-            } else if (Integer.parseInt(newValue) > 255) {
-                thresholdInputField.setText("255");
-                thresholdSlider.setValue(255);
-                throw new InvalidThresholdException(Integer.parseInt(newValue));
-            }
-            thresholdInputField.setText(Integer.parseInt(thresholdInputField.getText()) + "");
-            thresholdSlider.setValue(Integer.parseInt(thresholdInputField.getText()));
-        } catch (Exception e) {
-            AlertDialog.showDialog(e);
+    public static void setOnThresholdTextInputChange(TextField thresholdInputField, Slider thresholdSlider, String newValue) throws InvalidThresholdException {
+        if (newValue.isEmpty()) {
+            thresholdInputField.setText("0");
+        } else if (!newValue.matches("\\d*")) {
+            thresholdInputField.setText(newValue.replaceAll("[^\\d]", ""));
+        } else if (newValue.length() > 3) {
+            thresholdInputField.setText(newValue.substring(1, 4));
+        } else if (Integer.parseInt(newValue) > 255) {
+            thresholdInputField.setText("255");
+            thresholdSlider.setValue(255);
+            throw new InvalidThresholdException(Integer.parseInt(newValue));
         }
+        thresholdInputField.setText(Integer.parseInt(thresholdInputField.getText()) + "");
+        thresholdSlider.setValue(Integer.parseInt(thresholdInputField.getText()));
     }
 
     public static void setOnThresholdSliderInput(TextField thresholdTextField, int newValue) {

@@ -3,6 +3,7 @@ package se233.project;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import se233.project.controller.AlertDialog;
 import se233.project.view.MainMenu;
 
 import java.io.File;
@@ -15,6 +16,9 @@ public class Launcher extends Application {
 
     @Override
     public void start(Stage stage) {
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            AlertDialog.showDialog((Exception) throwable);
+        });
         primaryStage = stage;
         Scene mainScene = new Scene(new MainMenu());
         primaryStage.setScene(mainScene);

@@ -1,6 +1,6 @@
 package se233.project.controller.customexceptions;
 
-public class InvalidThresholdException extends Exception {
+public class InvalidThresholdException extends RuntimeException {
     public InvalidThresholdException(int threshold) {
         super("Threshold Out of Bound: Threshold should be between 0 and 255.\nEntered Threshold: " + threshold);
     }
