@@ -1,5 +1,6 @@
 package se233.project.controller.viewcontrollers;
 
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -13,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import se233.project.Launcher;
+import se233.project.controller.AlertDialog;
 import se233.project.controller.CropSaveTask;
 import se233.project.model.AreaSelection;
 import se233.project.model.ResizableRectangle;
@@ -22,18 +24,23 @@ import se233.project.view.CropPane;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class CropPaneController {
     public static double zoomFactor = 1;
-    private static final ExecutorService service= Executors.newFixedThreadPool(15);
+    private static  ExecutorService service;
+    private static CountDownLatch countDownLatch ;
+   // public static boolean flag[]=new boolean[1];
 
     public static void cropImage(Bounds bounds, ImageView imageView) {
         int width = (int) bounds.getWidth();
         int height = (int) bounds.getHeight();
-        System.out.println("Crop Method: Bound::" + width + " ," + height);
+       /* System.out.println("Crop Method: Bound::" + width + " ," + height);*/
 
         SnapshotParameters parameters = new SnapshotParameters();
         parameters.setFill(Color.TRANSPARENT);
@@ -52,7 +59,7 @@ public class CropPaneController {
         croppedHbox.setOnMouseClicked(event -> {
             int selectedIndex = CropPane.CroppedimageListView.getSelectionModel().getSelectedIndex();
             CropPane.previewImgView.setImage(CropPane.wiList.get(selectedIndex));
-            System.out.println("Click on list cell index:" + selectedIndex);
+           /* System.out.println("Click on list cell index:" + selectedIndex);*/
         });
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
@@ -64,7 +71,7 @@ public class CropPaneController {
                 CropPane.previewImgView.setImage(CropPane.blankImage);
             }
             CropPane.CroppedimageListView.getItems().remove(removeBtn.getParent());
-            System.out.println("Remove index:" + index + " Size of wiList:" + CropPane.wiList.size() + " Size of CrList:" + CropPane.croppedFilesList.size());
+         /*   System.out.println("Remove index:" + index + " Size of wiList:" + CropPane.wiList.size() + " Size of CrList:" + CropPane.croppedFilesList.size());*/
             CropPane.wiList.remove(index);
             CropPane.croppedFilesList.remove(index);
 
@@ -76,23 +83,50 @@ public class CropPaneController {
 
     public static void saveCroppedImage() {
         if (CropPane.wiList.isEmpty()) {
-            System.out.println("No Cropped Image..");
+           /* System.out.println("No Cropped Image..");*/
             return;
         }
+        service=Executors.newFixedThreadPool(15);
+        countDownLatch=new CountDownLatch(CropPane.wiList.size());
+
 
         for (int i = 0; i < CropPane.wiList.size(); i++) {
             String fileExtension = getFileExtension(CropPane.croppedFilesList.get(i));
             String fileFullName = CropPane.croppedFilesList.get(i).getName();
             String fileName = fileFullName.substring(0, fileFullName.length() - 4) + "Cropped";
             final File imgFileForesee = new File(Launcher.outputPath + "\\" + fileName + i + "." + fileExtension);
-            CropSaveTask cropSaveTask = new CropSaveTask(i, fileExtension, imgFileForesee);
+            CropSaveTask cropSaveTask = new CropSaveTask(i, fileExtension, imgFileForesee,countDownLatch);
             CropPane.CroppedimageListView.modifyListCell(i, cropSaveTask);
             service.submit(cropSaveTask);
 
         }
+        service.submit(()->{
+            boolean flag=new File(Launcher.outputPath).exists();
+            try {
+                countDownLatch.await();
+                TimeUnit.MILLISECONDS.sleep(100);
+
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            Platform.runLater(()->{
+
+                if(!flag){
+
+                    AlertDialog.showDialog(new Exception("Invalid Path."));
+                }
+                else {
+                    AlertDialog.showDialog("Save", "Save successful");
+                }
+            });
+
+
+
+        });
+
         service.shutdown();
 
-        System.out.println("Save called.");
+ /*       System.out.println("Save called.");*/
     }
 
     public static Image convertFileToImage(File imageFile) throws IOException {
@@ -152,10 +186,10 @@ public class CropPaneController {
 
         }
 
-        System.out.println("Image size:" + image.getWidth() + "," + image.getHeight());
+    /*    System.out.println("Image size:" + image.getWidth() + "," + image.getHeight());
         System.out.println("After Changing Image View Size:" + imageView.getFitWidth() + "," + imageView.getFitHeight());
         System.out.println("After changing inbound parentS:" + imageView.getBoundsInParent().getWidth() + "," + imageView.getBoundsInParent().getHeight());
-        System.out.println("After changing, bound in local:" + imageView.getBoundsInLocal().getWidth() + "," + imageView.getBoundsInLocal().getHeight());
+        System.out.println("After changing, bound in local:" + imageView.getBoundsInLocal().getWidth() + "," + imageView.getBoundsInLocal().getHeight());*/
     }
 
     public static String getFileName(int i) {
@@ -183,6 +217,12 @@ public class CropPaneController {
         CropPane.mainImageView.setFitHeight(mainImage.getHeight());
         CropPane.mainImageView.setFitWidth(mainImage.getWidth());
         Launcher.primaryStage.setWidth(CropPane.scrollPane.getPrefViewportWidth() + 600 + 70);
+        Launcher.primaryStage.setHeight(CropPane.scrollPane.getPrefViewportHeight() + 400);
+       // Launcher.primaryStage.sizeToScene();
+      Launcher.primaryStage.setMaximized(false);
+//        Launcher.primaryStage.setFullScreen(true);*/
+       // Launcher.primaryStage.setMaximized(true);
+        centerStage(Launcher.primaryStage);
     }
 
 
@@ -197,14 +237,15 @@ public class CropPaneController {
 
 
     public static void zoomOut(ScrollPane scrollPane, Label zoomPercentLbl, Group group, CropBoxConfigPane configPane) {
-        if(zoomFactor<0.5)
+        ImageView imageView=(ImageView) (group.getChildren().getFirst());
+        if(zoomFactor<0.5 && imageView.getImage().getWidth()<1800 && imageView.getImage().getHeight()<1000)
             return;
         double zoomIncrement = 1.1;
         zoomFactor = zoomFactor / zoomIncrement;
         zoom(scrollPane, zoomPercentLbl, group);
         CropPane.setObPropertyForImageView(CropPane.mainImageView);
         ResizableRectangle rectangle=CropPane.areaSelection.getSelectionRectangle();
-        ImageView imageView=(ImageView) (group.getChildren().getFirst());
+
         while (isOutOfBound(rectangle,imageView) )
         {
            if(rectangle.getWidth()<=0 || rectangle.getHeight()<=0){
@@ -251,11 +292,12 @@ public class CropPaneController {
         return false;
     }
 
-    public static void nextImageBtn(ImageView mainImageView, Image mainImage) {
+    public static void nextImageBtn(ImageView mainImageView, Image mainImage,Label zoomLbl) {
         if(Launcher.imageFiles.size()==1){
             return;
         }
         zoomFactor = 1;
+        zoomLbl.setText("100%");
 
         if (CropPane.imageIndex >= Launcher.imageFiles.size() - 1) {
             CropPane.imageIndex = -1;
@@ -275,11 +317,12 @@ public class CropPaneController {
 
     }
 
-    public static void previousImageBtn(ImageView mainImageView, Image mainImage) {
+    public static void previousImageBtn(ImageView mainImageView, Image mainImage,Label zoomLbl) {
         if(Launcher.imageFiles.size()==1){
             return;
         }
             zoomFactor = 1;
+            zoomLbl.setText("100%");
             if (CropPane.imageIndex <=0) {
                 CropPane.imageIndex = Launcher.imageFiles.size() ;
 
@@ -341,7 +384,7 @@ public class CropPaneController {
 
         // Set the stage to the center of the screen and ensure it's within the screen bounds
         stage.setX(Math.max((screenBounds.getWidth() - stageWidth) / 2, screenBounds.getMinX()));
-        //stage.setY(Math.max((screenBounds.getHeight() - stageHeight) / 2, screenBounds.getMinY()));
+      /*  stage.setY(Math.max((screenBounds.getHeight() - stageHeight) / 2, screenBounds.getMinY()));*/
         stage.setY(10);
     }
 }

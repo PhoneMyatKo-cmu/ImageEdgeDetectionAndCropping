@@ -12,8 +12,8 @@ import se233.project.model.ResizableRectangleWithRatio1;
 
 public class CropBoxConfigPane extends VBox {
     ResizableRectangle rectangle;
-    TextField widthField;
-    TextField heightField;
+   public static TextField widthField;
+   public static TextField heightField;
     ComboBox<String> cropOptionBox;
     public static ToggleButton croppingOnOff;
     public Button cropButton;

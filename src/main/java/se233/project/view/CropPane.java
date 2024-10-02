@@ -95,13 +95,19 @@ public class CropPane extends BorderPane {
         menu1.getItems().add(backToBtn);
         backToBtn.setOnAction(event -> {
             Launcher.primaryStage.setScene(new Scene(new InputPane("Crop")));
-            Launcher.primaryStage.setMaximized(false);
-            Launcher.primaryStage.setWidth(585);
+          //  Launcher.primaryStage.setMaximized(true);
+           /* Launcher.primaryStage.setWidth(585);
             Launcher.primaryStage.setHeight(500);
+            Launcher.primaryStage.setFullScreen(true);*/
+            Launcher.primaryStage.sizeToScene();
             CropPane.wiList.clear();
             CropPane.CroppedimageListView.getItems().clear();
             CropPane.croppedFilesList.clear();
+            Launcher.imageFiles.clear();
             CropPaneController.centerStage(Launcher.primaryStage);
+            CropPaneController.zoomFactor=1;
+            imageIndex=0;
+            clearSelectionBtn.fire();
         });
 
 
@@ -123,13 +129,13 @@ public class CropPane extends BorderPane {
         });
 
         nextImageBtn.setOnAction(e -> {
-            CropPaneController.nextImageBtn(mainImageView, mainImage);
-            zoomPercentLbl.setText(100 + "%");
+            CropPaneController.nextImageBtn(mainImageView, mainImage,zoomPercentLbl);
+
         });
 
         previousImageBtn.setOnAction(e -> {
-            CropPaneController.previousImageBtn(mainImageView, mainImage);
-            zoomPercentLbl.setText(100 + "%");
+            CropPaneController.previousImageBtn(mainImageView, mainImage,zoomPercentLbl);
+
         });
 
         zoomInBtn.setOnAction(event -> CropPaneController.zoomIn(scrollPane, zoomPercentLbl,selectionGroup));
@@ -151,7 +157,7 @@ public class CropPane extends BorderPane {
         menuBar.getMenus().addAll(menu1);
         this.setTop(menuBar);
         this.setBottom(new HBox());
-        mode();
+        styling();
         zoomInBtn.setVisible(true);
         zoomOutBtn.setVisible(true);
         CropPaneController.viewFullSize(mainImage);
@@ -162,7 +168,7 @@ public class CropPane extends BorderPane {
 
     public static void refreshPreview(Image image) {
         previewImgView.setImage(image);
-        System.out.println("called" + image);
+       /* System.out.println("called" + image);*/
 
 
     }
@@ -214,7 +220,7 @@ public class CropPane extends BorderPane {
         return containerPane;
     }
 
-    public void mode() {
+    public void styling() {
         this.setStyle("-fx-background-color: #F5F5F5;");
         secondLevelpane.getLeft().setStyle("-fx-border-color: black;-fx-border-width: 1");
         scrollPane.setStyle("-fx-background-color:#0b0707;");
@@ -226,9 +232,9 @@ public class CropPane extends BorderPane {
         imageView.getParent().layoutBoundsProperty().addListener((obs, old, newBound) -> {
             displayWidth.set(imageView.getBoundsInLocal().getWidth());
             displayHeight.set(imageView.getBoundsInLocal().getHeight());
-        });
+        });/*
         System.out.println("Image bound:"+imageView.getBoundsInLocal().getWidth());
-        System.out.println("Ob width:" + displayWidth);
+        System.out.println("Ob width:" + displayWidth);*/
     }
 
 
