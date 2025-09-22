@@ -209,8 +209,8 @@ public class CropPane extends BorderPane {
         containerPane.getChildren().add(CroppedimageListView);
         HBox btnBox = new HBox(30);
         btnBox.setAlignment(Pos.CENTER);
-        Button saveBtn = new Button("Save");
-        Button clearBtn = new Button("Clear List");
+        Button saveBtn = new Button("Batch Process & Save");
+        Button clearBtn = new Button("Clear");
 
         saveBtn.setOnAction(actionEvent -> CropPaneController.saveCroppedImage());
         clearBtn.setOnAction(actionEvent -> CropPaneController.clearList());

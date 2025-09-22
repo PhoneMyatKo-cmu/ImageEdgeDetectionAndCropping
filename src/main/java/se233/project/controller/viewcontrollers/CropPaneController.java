@@ -35,12 +35,11 @@ public class CropPaneController {
     public static double zoomFactor = 1;
     private static  ExecutorService service;
     private static CountDownLatch countDownLatch ;
-   // public static boolean flag[]=new boolean[1];
+
 
     public static void cropImage(Bounds bounds, ImageView imageView) {
         int width = (int) bounds.getWidth();
         int height = (int) bounds.getHeight();
-       /* System.out.println("Crop Method: Bound::" + width + " ," + height);*/
 
         SnapshotParameters parameters = new SnapshotParameters();
         parameters.setFill(Color.TRANSPARENT);
@@ -253,10 +252,6 @@ public class CropPaneController {
                CropBoxConfigPane.croppingOnOff.setSelected(false);
                break;
            }
-        /*   if(rectangle.getHeight()<=40){
-               rectangle.setY(imageView.getBoundsInLocal().getHeight()-41);
-               break;
-           }*/
             rectangle.setWidth(rectangle.getWidth()-1);
             if(rectangle instanceof ResizableRectangleWithRatio1){
                 rectangle.setHeight(rectangle.getHeight()-(1/((ResizableRectangleWithRatio1) rectangle).aspect_ratio));

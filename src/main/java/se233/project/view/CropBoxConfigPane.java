@@ -115,6 +115,9 @@ public class CropBoxConfigPane extends VBox {
                 }
             } catch (NumberFormatException e) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(null);
+                alert.setHeaderText(null);
+                alert.setGraphic(null);
                 alert.setContentText("Enter numbers only!");
                 alert.showAndWait();
                 return;
@@ -124,6 +127,9 @@ public class CropBoxConfigPane extends VBox {
 
                 /* width = CropPane.mainImageView.getBoundsInParent().getWidth() - this.rectangle.getX();*/
                 Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(null);
+                alert.setHeaderText(null);
+                alert.setGraphic(null);
                 alert.setContentText("Crop Size Cannot Be Bigger Than Image Size.");
                 alert.showAndWait();
                 return;
@@ -131,6 +137,9 @@ public class CropBoxConfigPane extends VBox {
             }
             else if(width<=0 | height<=0){
                 Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(null);
+                alert.setHeaderText(null);
+                alert.setGraphic(null);
                 alert.setContentText("Crop Size Cannot Be 0 or Negative.");
                 alert.showAndWait();
                 return;
